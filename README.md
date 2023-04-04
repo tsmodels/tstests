@@ -1,2 +1,2 @@
 # tstests
-Time Series Tests and Metrics
+Time Series Tests
