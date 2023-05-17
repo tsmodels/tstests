@@ -14,4 +14,4 @@ LazyData: true
 RdMacros: Rdpack
 RoxygenNote: 7.2.3
 Roxygen: list(markdown = TRUE)
-Remotes: tsmodels/tsdatasets, tsmodels/tsdistributions, tsmodels/tsgarch
+remotes: tsmodels/tsdatasets, tsmodels/tsdistributions, tsmodels/tsgarch
