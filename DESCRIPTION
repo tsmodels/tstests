@@ -1,17 +1,17 @@
 Package: tstests
 Type: Package
-Title: Tests and Metrics for timeseries
+Title: Goodness of Fit and Forecast Evaluation Tests for timeseries models
 Version: 0.1.0
 Author: Alexios Galanos
 Maintainer: alexios galanos <alexios@4dscape.com>
 Depends: R (>= 3.5.0), methods, tsmethods
 Description: Tests and metrics from timeseries analysis.
 Imports: data.table, flextable, Rdpack, car, ks
-Suggests: sandwich, tsdatasets, tsdistributions, tsgarch
 License: GPL-2 | file LICENSE
 Encoding: UTF-8
 LazyData: true
 RdMacros: Rdpack
 RoxygenNote: 7.2.3
 Roxygen: list(markdown = TRUE)
-remotes: tsmodels/tsmethods, tsmodels/tsdatasets, tsmodels/tsdistributions, tsmodels/tsgarch
+Remotes: tsmodels/tsmethods, tsmodels/tsdatasets, tsmodels/tsdistributions, tsmodels/tsgarch
+Suggests: sandwich, tsdatasets, tsdistributions, tsgarch
