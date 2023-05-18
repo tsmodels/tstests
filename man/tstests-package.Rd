@@ -4,8 +4,8 @@
 \name{tstests-package}
 \alias{tstests}
 \alias{tstests-package}
-\title{tstests: Tests and Metrics for timeseries}
+\title{tstests: Time Series Model and Forecast Tests}
 \description{
-Tests and metrics from timeseries analysis.
+Goodness of Fit and Forecast Evaluation Tests for timeseries models.
 }
 \keyword{internal}

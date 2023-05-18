@@ -1,11 +1,11 @@
 Package: tstests
 Type: Package
-Title: Goodness of Fit and Forecast Evaluation Tests for timeseries models
+Title: Time Series Model and Forecast Tests
 Version: 0.1.0
 Author: Alexios Galanos
 Maintainer: alexios galanos <alexios@4dscape.com>
 Depends: R (>= 3.5.0), methods, tsmethods
-Description: Tests and metrics from timeseries analysis.
+Description: Goodness of Fit and Forecast Evaluation Tests for timeseries models.
 Imports: data.table, flextable, Rdpack, car, ks
 License: GPL-2 | file LICENSE
 Encoding: UTF-8

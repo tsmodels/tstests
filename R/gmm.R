@@ -113,30 +113,30 @@ gmm_test <- function(x, lags = 1, skewness = 0, kurtosis = 3, conf_level = 0.95,
     }
     tmp2 <- .wald_comoment_test(std_residuals[,1]^3 - skewness, lags, n)
     if (lags == 1) {
-        orthogonal_matrix[1, k] <- tmp1$g
-        orthogonal_matrix[2, k] <- tmp1$varg
-        orthogonal_matrix[3, k] <- tmp1$tval
+        orthogonal_matrix[1, k] <- tmp2$g
+        orthogonal_matrix[2, k] <- tmp2$varg
+        orthogonal_matrix[3, k] <- tmp2$tval
         orthogonal_matrix[4, k] <- 1 - pchisq(orthogonal_matrix[3,k], lags)
         k <- k + 1
     } else {
-        orthogonal_matrix[1, k:(k + lags - 1)] <- tmp1$g
-        orthogonal_matrix[2, k:(k + lags - 1)] <- tmp1$varg
-        orthogonal_matrix[3, k:(k + lags)] <- tmp1$tval
+        orthogonal_matrix[1, k:(k + lags - 1)] <- tmp2$g
+        orthogonal_matrix[2, k:(k + lags - 1)] <- tmp2$varg
+        orthogonal_matrix[3, k:(k + lags)] <- tmp2$tval
         orthogonal_matrix[4, k:(k + lags - 1)] <- 1 - pchisq(orthogonal_matrix[3,k:(k + lags - 1)], 1:lags)
         orthogonal_matrix[4, (k + lags)] <- 1 - pchisq(orthogonal_matrix[3,(k + lags)], lags)
         k <- k + lags + 1
     }
     tmp3 <- .wald_comoment_test(std_residuals[,1]^4 - kurtosis, lags, n)
     if (lags == 1) {
-        orthogonal_matrix[1, k] <- tmp1$g
-        orthogonal_matrix[2, k] <- tmp1$varg
-        orthogonal_matrix[3, k] <- tmp1$tval
+        orthogonal_matrix[1, k] <- tmp3$g
+        orthogonal_matrix[2, k] <- tmp3$varg
+        orthogonal_matrix[3, k] <- tmp3$tval
         orthogonal_matrix[4, k] <- 1 - pchisq(orthogonal_matrix[3,k], lags)
         k <- k + 1
     } else {
-        orthogonal_matrix[1, k:(k + lags - 1)] <- tmp1$g
-        orthogonal_matrix[2, k:(k + lags - 1)] <- tmp1$varg
-        orthogonal_matrix[3, k:(k + lags)] <- tmp1$tval
+        orthogonal_matrix[1, k:(k + lags - 1)] <- tmp3$g
+        orthogonal_matrix[2, k:(k + lags - 1)] <- tmp3$varg
+        orthogonal_matrix[3, k:(k + lags)] <- tmp3$tval
         orthogonal_matrix[4, k:(k + lags - 1)] <- 1 - pchisq(orthogonal_matrix[3,k:(k + lags - 1)], 1:lags)
         orthogonal_matrix[4, (k + lags)] <- 1 - pchisq(orthogonal_matrix[3,(k + lags)], lags)
         k <- k + lags + 1
