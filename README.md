@@ -1,6 +1,6 @@
 
 [![R-CMD-check](https://github.com/tsmodels/tstests/workflows/R-CMD-check/badge.svg)](https://github.com/tsmodels/tstests/actions)
-[![Last-changedate](https://img.shields.io/badge/last%20change-2023--05--17-yellowgreen.svg)](/commits/master)
+[![Last-changedate](https://img.shields.io/badge/last%20change-2023--05--18-yellowgreen.svg)](/commits/master)
 [![packageversion](https://img.shields.io/badge/Package%20version-0.1.0-orange.svg?style=flat-square)](commits/master)
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/tstests)](https://cran.r-project.org/package=tstests)
 
@@ -26,6 +26,22 @@ test of Hong and Li (2005) and the Model Confidence Set of Hansen et al
 | Expected Shortfall Test                | shortfall_de_test |                        Du (2017) |
 | Sign Bias Test                         |   signbias_test   |                     Engle (1993) |
 | Value at Risk Test                     |    var_cp_test    |       Christoffersen (1998,2004) |
+
+## Installation
+
+The package can be installed from the tsmodels github repo.
+
+``` r
+remotes::install_github("tsmodels/tstests", dependencies = TRUE)
+```
+
+Note, that in order to make use of symbolic output, flextable requires
+[equatags](https://cran.r-project.org/web/packages/equatags/index.html)
+to be installed which has a dependency on
+[xlst](https://cran.r-project.org/web/packages/xslt/index.html) which in
+turn has SystemRequirements libxslt. Therefore, if you are seeing `NA`
+printed in place of symbols, then it is likely that xlst is not
+installed.
 
 ## References
 
