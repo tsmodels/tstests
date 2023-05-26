@@ -5,7 +5,6 @@
 #' @param lags the lags for the co-moment test.
 #' @param skewness the skewness of the estimated model residuals.
 #' @param kurtosis the kurtosis of the estimated model residuals.
-#' @param conf_level the confidence level to use for the test.
 #' @param ... not currently used.
 #' @return An object of class \dQuote{tstest.gmm} which has a print and
 #' as_flextable method.
@@ -33,14 +32,14 @@
 #' # since the test takes the actual not excess kurtosis.
 #' kurtosis <- dkurtosis("jsu", skew = coef(mod)["skew"], shape = coef(mod)["shape"]) + 3
 #' test <- gmm_test(residuals(mod, standardize = TRUE), lags = 2, skewness = skewness,
-#' kurtosis = kurtosis, conf_level = 0.95)
+#' kurtosis = kurtosis)
 #' print(test, collapse = TRUE, include.decision = TRUE)
 #'
 #' @rdname gmm_test
 #' @export
 #'
 #'
-gmm_test <- function(x, lags = 1, skewness = 0, kurtosis = 3, conf_level = 0.95, ...)
+gmm_test <- function(x, lags = 1, skewness = 0, kurtosis = 3, ...)
 {
     if (missing(x)) stop("\nx is missing.")
     `Pr(>|t|)` <- NULL

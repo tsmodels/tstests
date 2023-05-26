@@ -4,7 +4,7 @@
 \alias{gmm_test}
 \title{GMM Orthogonality Test}
 \usage{
-gmm_test(x, lags = 1, skewness = 0, kurtosis = 3, conf_level = 0.95, ...)
+gmm_test(x, lags = 1, skewness = 0, kurtosis = 3, ...)
 }
 \arguments{
 \item{x}{a series representing the standardized residuals of some estimated model.}
@@ -14,8 +14,6 @@ gmm_test(x, lags = 1, skewness = 0, kurtosis = 3, conf_level = 0.95, ...)
 \item{skewness}{the skewness of the estimated model residuals.}
 
 \item{kurtosis}{the kurtosis of the estimated model residuals.}
-
-\item{conf_level}{the confidence level to use for the test.}
 
 \item{...}{not currently used.}
 }
@@ -46,7 +44,7 @@ skewness <- dskewness("jsu", skew = coef(mod)["skew"], shape = coef(mod)["shape"
 # since the test takes the actual not excess kurtosis.
 kurtosis <- dkurtosis("jsu", skew = coef(mod)["skew"], shape = coef(mod)["shape"]) + 3
 test <- gmm_test(residuals(mod, standardize = TRUE), lags = 2, skewness = skewness,
-kurtosis = kurtosis, conf_level = 0.95)
+kurtosis = kurtosis)
 print(test, collapse = TRUE, include.decision = TRUE)
 
 }
