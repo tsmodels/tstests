@@ -169,8 +169,8 @@ unconditional_de_statistic <- function(p, alpha = 0.05)
 unconditional_de_pvalue <- function(stat, n, alpha)
 {
     mu <- alpha/2
-    sig <- sqrt(alpha * (1/3 - alpha/4))/sqrt(n)
-    tvalue <- (stat - mu)/sig
+    sig <- sqrt(alpha * (1/3 - alpha/4))
+    tvalue <- abs((sqrt(n) * (stat - mu))/sig)
     pvalue <- 2 * min(pnorm(abs(tvalue)), 1 - pnorm(abs(tvalue)))
     return(pvalue)
 }

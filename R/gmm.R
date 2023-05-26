@@ -276,7 +276,7 @@ as_flextable.tstest.gmm <- function(x, digits = max(3L, getOption("digits") - 3L
     f0 <- f0[-c(1:lags), , drop = FALSE]
     fmat <- f0 * fx
     g <- colMeans(fmat)
-    varg <- apply(fmat, 2, FUN = function(x) (sum(x^2)/n)/n)
+    varg <- apply(fmat, 2, FUN = function(x) sum(x^2)/n/n)
     tval <- g^2/varg
     h <- t(fmat)
     S <- (h %*% t(h))/n
