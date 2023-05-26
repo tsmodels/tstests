@@ -99,7 +99,7 @@ gmm_test <- function(x, lags = 1, skewness = 0, kurtosis = 3, ...)
     if (lags == 1) {
         orthogonal_matrix[1, k] <- tmp1$g
         orthogonal_matrix[2, k] <- tmp1$varg
-        orthogonal_matrix[3, k] <- tmp1$tval
+        orthogonal_matrix[3, k] <- tmp1$tval[2]
         orthogonal_matrix[4, k] <- 1 - pchisq(orthogonal_matrix[3,k], lags)
         k <- k + 1
     } else {
@@ -114,7 +114,7 @@ gmm_test <- function(x, lags = 1, skewness = 0, kurtosis = 3, ...)
     if (lags == 1) {
         orthogonal_matrix[1, k] <- tmp2$g
         orthogonal_matrix[2, k] <- tmp2$varg
-        orthogonal_matrix[3, k] <- tmp2$tval
+        orthogonal_matrix[3, k] <- tmp2$tval[2]
         orthogonal_matrix[4, k] <- 1 - pchisq(orthogonal_matrix[3,k], lags)
         k <- k + 1
     } else {
@@ -129,7 +129,7 @@ gmm_test <- function(x, lags = 1, skewness = 0, kurtosis = 3, ...)
     if (lags == 1) {
         orthogonal_matrix[1, k] <- tmp3$g
         orthogonal_matrix[2, k] <- tmp3$varg
-        orthogonal_matrix[3, k] <- tmp3$tval
+        orthogonal_matrix[3, k] <- tmp3$tval[2]
         orthogonal_matrix[4, k] <- 1 - pchisq(orthogonal_matrix[3,k], lags)
         k <- k + 1
     } else {
@@ -276,8 +276,8 @@ as_flextable.tstest.gmm <- function(x, digits = max(3L, getOption("digits") - 3L
     f0 <- f0[-c(1:lags), , drop = FALSE]
     fmat <- f0 * fx
     g <- colMeans(fmat)
-    varg <- apply(fmat, 2, FUN = function(x) mean(x^2)/n)
-    tval <- g/varg
+    varg <- apply(fmat, 2, FUN = function(x) (sum(x^2)/n)/n)
+    tval <- g^2/varg
     h <- t(fmat)
     S <- (h %*% t(h))/n
     joint <- n * t(g) %*% solve(S) %*% g
