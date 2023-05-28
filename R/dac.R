@@ -162,7 +162,7 @@ as_flextable.tstest.dac <- function(x, digits = max(3L, getOption("digits") - 3L
     p_hat_var <- (p_star * (1 - p_star))/n
     p_star_var <- ((2*p_y - 1)^2 * (p_x * (1 - p_x)))/n + ((2 * p_x - 1)^2 * (p_y * (1 - p_y)))/n + (4 * p_x * p_y * (1 - p_x) * (1 - p_y))/n^2
     s_n <- (p_hat - p_star)/sqrt(p_hat_var - p_star_var)
-    ans <- list(Test = "PT: (Sign) Predictability", Accuracy = p_hat, Stat = s_n, p_value = 1 - pnorm(s_n),
+    ans <- list(Test = "PT: (Sign)", Accuracy = p_hat, Stat = s_n, p_value = 1 - pnorm(s_n),
                H0 = "PT: No Predictability (Sign)")
     return(ans)
 }
@@ -176,7 +176,7 @@ as_flextable.tstest.dac <- function(x, digits = max(3L, getOption("digits") - 3L
     p_y <- 0.5 * (1 + mean(sign(forecast)))
     V_EP <- (4/(n^2)) * p_y * (1 - p_y) * sum((actual - mean(actual))^2)
     EP <- (A_t - B_t)/sqrt(V_EP)
-    ans <- list(Test = "AG: (Mean) Predictability", Accuracy = sum(r_t > 0)/n, Stat = EP,
+    ans <- list(Test = "AG: (Mean)", Accuracy = sum(r_t > 0)/n, Stat = EP,
                 p_value = 1 - pnorm(EP), H0 = "AG: No Predictability (Mean)")
     return(ans)
 }

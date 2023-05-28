@@ -33,10 +33,10 @@ berkowitz_test <- function(x, lags = 1, ...)
     n <- length(x)
     lags <- pmax(0, as.integer(lags))
     mod <- arima(x, order = c(lags, 0, 0), ...)
-    uLL <- as.numeric(logLik(mod))
-    rLL <- sum(dnorm(x, mean = 0, sd = 1, log = TRUE))
-    lr_stat <- -2 * (rLL - uLL)
-    prob <- 1 - pchisq(lr_stat, 2 + lags)
+    unrestricted_likelihood <- as.numeric(logLik(mod))
+    restricted_likelihood <- sum(dnorm(x, mean = 0, sd = 1, log = TRUE))
+    likelihood_ratio_stat <- -2 * (restricted_likelihood - unrestricted_likelihood)
+    prob <- 1 - pchisq(likelihood_ratio_stat, 2 + lags)
     m1 <- sum(x)/n
     xm <- (x - m1)
     m2 <- sum(xm^2)/n
@@ -46,15 +46,14 @@ berkowitz_test <- function(x, lags = 1, ...)
     k2 <- (m4/m2^2)
     jb_stat <- n * k1/6 + n * (k2 - 3)^2/24
     jb_prob <- 1 - pchisq(jb_stat, df = 2)
-    signif <- c(" ",pvalue_format(c(prob,jb_prob)))
-    decision <- rep(" ", 3)
-    if (prob < 0.05) decision[2] <- "Reject H0"
-    if (jb_prob < 0.05) decision[3] <- "Reject Normal Assumption"
+    signif <- pvalue_format(c(prob,jb_prob))
+    decision <- rep(" ", 2)
+    if (prob < 0.05) decision[1] <- "Reject H0"
+    if (jb_prob < 0.05) decision[2] <- "Reject Normal Assumption"
     H0 <- paste("Normal(0,1) with no autocorrelation")
-    berk_tab <- data.table(Test = c("Berkowitz (LR)"," ","Jarque-Bera (GoF)"), "Model" = c("restricted","unrestricted"," "), DoF = c(0, 2 + lags,2),
-                           "logLik" = c(rLL, uLL,NA), "Chisq" = c(NA, lr_stat, jb_stat), "Pr(>Chisq)" = c(NA, prob, jb_prob), signif = signif)
+    berk_tab <- data.table(Test = c("Berkowitz","Jarque-Bera"), DoF = c(2 + lags, 2), "Statistic" = c(likelihood_ratio_stat, jb_stat), "Pr(>Chisq)" = c(prob, jb_prob),
+                           signif = signif)
     berk_tab[,'Decision(5%)' := decision]
-
     out <- list(table = berk_tab, hypothesis = H0, test_type = "Likelihood Ratio",
                 distribution = "Chi-squared", symbols = NULL,
                 test_name = "Berkowitz Density Forecast Test", test_class = "berkowitz",
@@ -87,13 +86,11 @@ print.tstest.berkowitz <- function(x, digits = max(3L, getOption("digits") - 3L)
     } else {
         setnames(tab, "signif"," ")
     }
-    tab <- as.data.frame(tab)
-    tab[,"logLik"] <- as.character(signif(tab[,"logLik"], digits = digits))
-    tab[3,"logLik"] <- " "
-    tab[,"Chisq"] <- as.character(signif(tab[,"Chisq"], digits = digits))
-    tab[1,"Chisq"] <- " "
+    tab <- as.data.frame(tab, row.names = FALSE)
+    rownames(tab) <- tab[,1]
+    tab <- tab[,-1]
+    tab[,"Statistic"] <- as.character(signif(tab[,"Statistic"], digits = digits))
     tab[,"Pr(>Chisq)"] <- as.character(signif(tab[,"Pr(>Chisq)"], digits = digits))
-    tab[1,"Pr(>Chisq)"] <- " "
     print(tab)
     cat("\n---")
     if (signif.stars) {
@@ -127,7 +124,7 @@ as_flextable.tstest.berkowitz <- function(x, digits = max(3L, getOption("digits"
         cnames <- colnames(tab)
     }
     tab <- as.data.frame(tab)
-    out <- flextable(tab) |> set_caption(caption = table.caption) |> align(j = "Test", align = "left") |> align(j = "Model", align = "left")
+    out <- flextable(tab) |> set_caption(caption = table.caption) |> align(j = "Test", align = "left")
     if (signif.stars) {
         out <- out |> align(j = "signif", align = "left") |>
             bold(j = "signif", bold = TRUE) |>
@@ -141,7 +138,7 @@ as_flextable.tstest.berkowitz <- function(x, digits = max(3L, getOption("digits"
     if (footnote.reference) {
         out <- out |> add_footer_lines(top = FALSE, values = c("References: ", x$reference))
     }
-    out <- colformat_double(out, j = c("logLik","Chisq", "Pr(>Chisq)"), digits = digits) |> autofit()
+    out <- colformat_double(out, j = c("Statistic", "Pr(>Chisq)"), digits = digits) |> autofit()
     out <- out |> autofit(add_w = 0.2)
     if (signif.stars) out <- out |> hline(i = 1, part = "footer")
     return(out)

@@ -62,7 +62,7 @@ nyblom_test <- function(x, scores = NULL, parameter_names = colnames(scores), pa
         joint_pvalue <- as.numeric(NA)
         rownames(individual_stat) <- parameter_names
         nyblom_table <- data.table(parameter = c(parameter_names, "Joint"),
-                                   "L" = c(individual_stat, joint_stat),
+                                   "Statistic" = c(individual_stat, joint_stat),
                                    "Pr(>t)" = c(individual_pvalue, joint_pvalue))
         nyblom_table[,signif := rep("", m + 1)]
         decision <- rep(' ', nrow(nyblom_table))
@@ -80,7 +80,7 @@ nyblom_test <- function(x, scores = NULL, parameter_names = colnames(scores), pa
         individual_pvalue <- 1 - pkde(individual_stat, fun_i)
         joint_pvalue <- 1 - pkde(joint_stat, fun_j)
         nyblom_table <- data.table(parameter = c(parameter_names, "Joint"),
-                                   "L" = c(individual_stat, joint_stat),
+                                   "Statistic" = c(individual_stat, joint_stat),
                                    "Pr(>t)" = c(individual_pvalue, joint_pvalue))
         nyblom_table[,signif := pvalue_format(`Pr(>t)`)]
         decision <- rep(' ', nrow(nyblom_table))

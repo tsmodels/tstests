@@ -63,7 +63,7 @@ var_cp_test <- function(actual, forecast, alpha, ...)
 
     p_values <- c(coverage_test$p_value, duration_test$p_value)
     var_tab <- data.table("Test" = c("Kupiec (UC)", "CP (CCI)", "CP (CC)", "CP (D)"), "DoF" = c(1,1,2,1),
-                      "Chisq" = c(coverage_test$uc_lr_stat, coverage_test$cci_lr_stat, coverage_test$cc_lr_stat,
+                      "Statistic" = c(coverage_test$uc_lr_stat, coverage_test$cci_lr_stat, coverage_test$cc_lr_stat,
                                   duration_test$lr_stat),
                       "Pr(>Chisq)" = p_values,
                       signif = pvalue_format(p_values))
@@ -171,7 +171,7 @@ as_flextable.tstest.var_cp <- function(x, digits = max(3L, getOption("digits") -
     if (footnote.reference) {
         out <- out |> add_footer_lines(top = FALSE, values = c("References: ", x$reference))
     }
-    out <- colformat_double(out, j = c("Chisq", "Pr(>Chisq)"), digits = digits) |> autofit()
+    out <- colformat_double(out, j = c("Statistic", "Pr(>Chisq)"), digits = digits) |> autofit()
     out <- out |> autofit(add_w = 0.2)
     if (signif.stars) out <- out |> hline(i = 1, part = "footer")
     return(out)
@@ -198,9 +198,9 @@ as_flextable.tstest.var_cp <- function(x, digits = max(3L, getOption("digits") -
     p11 <- N11/(N10 + N11)
     # pn : unconditional probability of a failure
     pn <- (N01 + N11)/sum(tab)
-    l1 <- log(1 - pn) * (N00 + N10) + log(pn) * (N01 + N11)
-    l2 <- log(1 - p01) * N00  + log(p01) * (N01) + log(1 - p11) * (N10) + log(p11) * (N11)
-    cci_lr_stat <- -2 * (l1 - l2)
+    res <- log(1 - pn) * (N00 + N10) + log(pn) * (N01 + N11)
+    unr <- log(1 - p01) * N00  + log(p01) * (N01) + log(1 - p11) * (N10) + log(p11) * (N11)
+    cci_lr_stat <- -2 * (res - unr)
     uc_lr_stat <- .lr_unc_coverage(TN, N, alpha)
     if (is.nan(cci_lr_stat)) cci_lr_stat <- 1e10
     cc_lr_stat <- cci_lr_stat + uc_lr_stat
@@ -213,9 +213,9 @@ as_flextable.tstest.var_cp <- function(x, digits = max(3L, getOption("digits") -
 
 .lr_unc_coverage <- function(TN, N, alpha)
 {
-    unr <- log(1 - alpha) * (TN - N) + log(alpha) * N
-    res <- log(1 - N/TN) * (TN - N) + log(N/TN) * N
-    stat <- -2 * (unr - res)
+    res <- log(1 - alpha) * (TN - N) + log(alpha) * N
+    unr <- log(1 - N/TN) * (TN - N) + log(N/TN) * N
+    stat <- -2 * (res - unr)
     if (is.nan(stat)) stat <- 1e10
     return(stat)
 }
@@ -245,7 +245,7 @@ as_flextable.tstest.var_cp <- function(x, digits = max(3L, getOption("digits") -
     b <- sol$par
     unr_loglik <- -sol$value
     res_loglik <- -.lik_duration_weibull(1, D, C, N)
-    lr_stat <- 2 * (unr_loglik - res_loglik)
+    lr_stat <- -2 * (res_loglik - unr_loglik)
     p_value <- 1 - pchisq(lr_stat, 1)
     H0 <- "Duration Between Exceedances have no memory (Weibull b=1 = Exponential)"
     return(list(b = b, unr_loglik = unr_loglik, res_loglik = res_loglik, lr_stat = lr_stat, p_value = p_value, H0 = H0))
