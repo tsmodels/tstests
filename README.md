@@ -1,6 +1,6 @@
 
 [![R-CMD-check](https://github.com/tsmodels/tstests/workflows/R-CMD-check/badge.svg)](https://github.com/tsmodels/tstests/actions)
-[![Last-changedate](https://img.shields.io/badge/last%20change-2023--05--18-yellowgreen.svg)](/commits/master)
+[![Last-changedate](https://img.shields.io/badge/last%20change-2023--05--28-yellowgreen.svg)](/commits/master)
 [![packageversion](https://img.shields.io/badge/Package%20version-0.1.0-orange.svg?style=flat-square)](commits/master)
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/tstests)](https://cran.r-project.org/package=tstests)
 
@@ -42,6 +42,9 @@ to be installed which has a dependency on
 turn has SystemRequirements libxslt. Therefore, if you are seeing `NA`
 printed in place of symbols, then it is likely that xlst is not
 installed.
+
+An online vignette is available
+[here](https://www.nopredict.com/packages/tstests.html).
 
 ## References
 
