@@ -70,6 +70,7 @@ shortfall_de_test <- function(x, alpha = 0.05, lags = 1, boot = FALSE, n_boot = 
     H0 <- "Unconditional(U) and Independent(C)"
     out <- list(table = de_tab,
                 hypothesis = H0,  test_type = c("t-test","portmanteau"),
+                p_value = p_values,
                 distribution = c("Normal","Chi-squared"), test_class = "shortfall_de",
                 test_name = "Expected Shortfall Test (Du and Escanciano)",
                 alpha = alpha, nobs = n, lags = lags,

@@ -46,6 +46,7 @@ minzar_test <- function(actual, forecast, ...)
     out <- list(table = minzar_table,
                 joint_hypothesis = c("constant = 0","forecast = 0"),
                 hypothesis = "Unbiased Forecast",  test_type = "Wald",
+                p_value = jeffect$`Pr(>Chisq)`[2],
                 distribution = "Chi-squared", symbols = NULL, test_class = "minzar",
                 test_name = "Mincer-Zarnowitz Test",
                 reference = "Mincer JA. and Zarnowitz V. (1969), 'The evaluation of economic forecasts.' In Economic forecasts and expectations: Analysis of forecasting behavior and performance, NBER, 3--46")

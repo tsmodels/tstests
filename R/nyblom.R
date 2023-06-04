@@ -90,6 +90,7 @@ nyblom_test <- function(x, scores = NULL, parameter_names = colnames(scores), pa
         nyblom_table[,'Decision(5%)' := decision]
     }
     out <- list(table = nyblom_table, hypothesis = "Constant Parameters", test_type = "Lagrange Multiplier",
+                p_value = joint_pvalue,
                 distribution = "Cramer-von Mises", symbols = parameter_symbols,
                 test_name = "Nyblom-Hansen Parameter Constancy Test", test_class = "nyblom",
                 reference = "Nyblom,J. (1989), Testing for the constancy of parameters over time, Journal of the American Statistical Association, 405, 223--230.")

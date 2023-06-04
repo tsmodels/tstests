@@ -55,6 +55,7 @@ berkowitz_test <- function(x, lags = 1, ...)
                            signif = signif)
     berk_tab[,'Decision(5%)' := decision]
     out <- list(table = berk_tab, hypothesis = H0, test_type = "Likelihood Ratio",
+                p_value = prob,
                 distribution = "Chi-squared", symbols = NULL,
                 test_name = "Berkowitz Density Forecast Test", test_class = "berkowitz",
                 reference = c("Berkowitz, J. (2001), Testing density forecasts, with applications to risk management, Journal of Business and Economic Statistics, 19(4), 465--474.",

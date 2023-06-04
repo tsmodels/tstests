@@ -72,6 +72,7 @@ signbias_test <- function(x, sigma = 1, ...)
     out <- list(table = sign_bias_table,
                 joint_hypothesis = c("sign bias = 0","negative sign bias = 0", "positive sign bias = 0"),
                 hypothesis = "No sign bias",  test_type = "Wald",
+                p_value = jeffect$`Pr(>Chisq)`[2],
                 distribution = "Chi-squared", symbols = symbols, test_class = "signbias",
                 test_name = "Sign Bias Test",
                 reference = "Engle RF, Ng VK (1993). Measuring and testing the impact of news on volatility. The Journal of Finance, 48(5), 1749--1778.")

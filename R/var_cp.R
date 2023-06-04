@@ -85,6 +85,7 @@ var_cp_test <- function(actual, forecast, alpha, ...)
                 weibull_b = duration_test$b,
                 nobs = n_actual,
                 hypothesis = H0,  test_type = "Likelihood Ratio",
+                p_value = p_values,
                 distribution = "Chi-squared", symbols = NULL, test_class = "var_cp",
                 test_name = "Value at Risk Tests (Christoffersen and Pelletier)",
                 reference = references)

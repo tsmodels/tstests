@@ -157,6 +157,7 @@ gmm_test <- function(x, lags = 1, skewness = 0, kurtosis = 3, ...)
     }
     gmm_table[,'Decision(5%)' := decision]
     out <- list(table = gmm_table, hypothesis = hypothesis,
+                p_value = orthogonal_matrix[4,k],
                 distribution = distribution,
                 symbols = symbols,
                 test_type = "t-test/Wald test",

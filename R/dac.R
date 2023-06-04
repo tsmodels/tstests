@@ -58,6 +58,7 @@ dac_test <- function(actual, forecast, ...)
                 hypothesis = H0,  test_type = c("Hausman","Hausman"),
                 accuracy = test_1$Accuracy, prevalence = prevalence,
                 nobs = n_actual,
+                p_value = c(test_1$p_value, test_2$p_value),
                 distribution = c("Normal","Normal"), test_class = "dac",
                 test_name = "Directional Accuracy Tests",
                 reference = references)
