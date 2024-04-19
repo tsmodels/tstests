@@ -75,7 +75,7 @@ nyblom_test <- function(x, scores = NULL, parameter_names = colnames(scores), pa
         individual_stat <- matrix(nyblomt, ncol = 1)
         joint_stat <- nyblomj
         rownames(individual_stat) <- parameter_names
-        individual_pvalue <- 1 - pkde(individual_stat, fun_i)
+        individual_pvalue <- 1 - sapply(individual_stat, function(x) pkde(x, fun_i))
         joint_pvalue <- 1 - pkde(joint_stat, fun_j)
         nyblom_table <- data.table(parameter = c(parameter_names, "Joint"),
                                    "Statistic" = c(individual_stat, joint_stat),
