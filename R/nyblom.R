@@ -68,8 +68,6 @@ nyblom_test <- function(x, scores = NULL, parameter_names = colnames(scores), pa
         decision <- rep(' ', nrow(nyblom_table))
         nyblom_table[,'Decision(5%)' := decision]
     } else {
-        zx <- matrix(cbind(std_res, std_res^2, std_res^3, std_res^4), ncol = 4)
-        zs <- apply(zx, 2, FUN = function(x) scale(x, center = TRUE, scale = FALSE))
         cumulative_scores <- as.matrix(apply(scores, 2, FUN = function(x) cumsum(x)))
         xx <- t(cumulative_scores) %*% cumulative_scores
         nyblomj <- sum(diag(xx %*% V))/n
