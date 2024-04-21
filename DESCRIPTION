@@ -11,7 +11,7 @@ License: GPL-2
 Encoding: UTF-8
 LazyData: true
 RdMacros: Rdpack
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Roxygen: list(markdown = TRUE)
-Remotes: tsmodels/tsmethods, tsmodels/tsdatasets, tsmodels/tsdistributions, tsmodels/tsgarch
+Remotes: tsmodels/tsdatasets, tsmodels/tsgarch
 Suggests: sandwich, tsdatasets, tsdistributions, tsgarch

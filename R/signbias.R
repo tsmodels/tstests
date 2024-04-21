@@ -19,16 +19,10 @@
 #' library(tsdistributions)
 #' spy <- tsdatasets::spy
 #' spyr <- na.omit(diff(log(spy)))
-#' spec <- garch_modelspec(spyr, model = "egarch", order = c(2,1), constant = TRUE,
-#' distribution = "nig")
+#' spec <- garch_modelspec(spyr, model = "garch", order = c(1,1),
+#' constant = TRUE, distribution = "jsu")
 #' mod <- estimate(spec)
-#' skewness <- dskewness("nig", skew = coef(mod)["skew"],
-#' shape = coef(mod)["shape"])
-#' # dkurtosis is excess or Normal (3). Test uses actual kurtosis so add back 3.
-#' kurtosis <- dkurtosis("nig", skew = coef(mod)["skew"],
-#' shape = coef(mod)["shape"]) + 3
-#' print(gmm_test(residuals(mod, standardize = TRUE), lags = 2, skewness = skewness,
-#' kurtosis = kurtosis, conf_level = 0.95), collapse = TRUE, include.decision = TRUE)
+#' print(signbias_test(residuals(mod), sigma(mod)))
 #'
 #' @export
 #'

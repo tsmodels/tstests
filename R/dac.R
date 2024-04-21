@@ -88,7 +88,7 @@ print.tstest.dac <- function(x, digits = max(3L, getOption("digits") - 3L),
     } else {
         setnames(tab, "signif"," ")
     }
-    tab <- as.data.frame(tab, row.names = FALSE)
+    tab <- as.data.frame(tab)
     rownames(tab) <- tab[,1]
     tab <- tab[,-1]
     print(tab, digits = digits)
