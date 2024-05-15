@@ -8,7 +8,7 @@
 #' @param boot whether to use bootstrap simulation for estimating the p-values.
 #' @param n_boot the bootstrap replications used to calculate the p-value.
 #' @param ... not currently used.
-#' @return An object of class \dQuote{tstest.shortfall_de} which has a print and
+#' @returns An object of class \dQuote{tstest.shortfall_de} which has a print and
 #' as_flextable method.
 #' @details The test of Du and Escanciano (2017) combines ideas from
 #' Berkowitz (2001) and Christoffersen (1998) to create an unconditional
@@ -61,7 +61,7 @@ shortfall_de_test <- function(x, alpha = 0.05, lags = 1, boot = FALSE, n_boot = 
     }
     stat <- c(unconditional_stat, conditional_stat)
     p_values <- c(unconditional_pvalue, conditional_pvalue)
-    decision <- rep(" ", 2)
+    decision <- rep("Fail to Reject H0", 2)
     if (p_values[1] <= 0.05) decision[1] <- "Reject H0"
     if (p_values[2] <= 0.05) decision[2] <- "Reject H0"
     de_tab <- data.table("Test" = c("DE (U)", "DE (C)"),

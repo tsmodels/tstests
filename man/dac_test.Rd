@@ -25,7 +25,7 @@ and excess profitability test of Anatolyev and Gerko (2005).
 \details{
 The null hypothesis for the test of Pesaran and Timmermann (1992) is
 that the actual and predicted are independent (no sign predictability), whereas
-the test of Anatolyev and Gerko (2005) measures the significane of the excess
+the test of Anatolyev and Gerko (2005) measures the significance of the excess
 profitability under the null hypothesis of no excess excess profitability. Both
 are Hausman type tests asymptotically distributed as standard Normal.
 }

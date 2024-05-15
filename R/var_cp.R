@@ -8,7 +8,7 @@
 #' given by alpha (the forecast value at risk).
 #' @param alpha the quantile level used to calculate the forecast value at risk.
 #' @param ... not currently used.
-#' @return An object of class \dQuote{tstest.var_cp} which has a print and
+#' @returns An object of class \dQuote{tstest.var_cp} which has a print and
 #' as_flextable method.
 #' @details
 #' The unconditional (Kupiec 1995) and conditional (Christoffersen and
@@ -25,7 +25,7 @@
 #' test can conducted on any distribution which embeds the exponential as a
 #' restricted case, and a likelihood ratio test then conducted to see whether
 #' the restriction holds. Following Christoffersen and Pelletier (2004), the
-#' Weibull distribution is used with parameter ‘b=1’ representing the case of
+#' Weibull distribution is used with parameter \sQuote{b=1} representing the case of
 #' the exponential.
 #' @aliases var_cp_test
 #' @references
@@ -67,7 +67,7 @@ var_cp_test <- function(actual, forecast, alpha, ...)
                                   duration_test$lr_stat),
                       "Pr(>Chisq)" = p_values,
                       signif = pvalue_format(p_values))
-    decision <- rep(" ", 4)
+    decision <- rep("Fail to Reject H0", 4)
     if (p_values[1] < 0.05) decision[1] <- "Reject H0"
     if (p_values[2] < 0.05) decision[2] <- "Reject H0"
     if (p_values[3] < 0.05) decision[3] <- "Reject H0"

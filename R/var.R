@@ -14,7 +14,7 @@
 #' the conditional shortfall test.
 #' @param n_boot the bootstrap replications used to calculate the p-value.
 #' @param ... not currently used.
-#' @return An object of class \dQuote{tstest.vares} which has a print and
+#' @returns An object of class \dQuote{tstest.vares} which has a print and
 #' as_flextable method.
 #' @details
 #' This is a condensed table of both the \code{\link{var_cp_test}} and

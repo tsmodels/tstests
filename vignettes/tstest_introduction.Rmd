@@ -1,0 +1,777 @@
+---
+title: "Time Series Tests"
+output: 
+    rmarkdown::html_vignette:
+        css: custom.css
+        code_folding: hide
+        citation_package: natbib
+        toc: yes
+bibliography: tests.bib
+bibliography-style: apalike
+natbiboptions: round
+vignette: >
+  %\VignetteIndexEntry{Time Series Tests}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  comment = "##",
+  R.options = list(width = 60)
+)
+```
+
+```{r packages,warning=FALSE,message=FALSE}
+library(tstests)
+library(tsdistributions)
+library(tsgarch)
+library(flextable)
+library(xts)
+data("spy")
+data("arma_forecast")
+data("garch_forecast")
+spyr <- na.omit(diff(log(spy)))
+```
+
+# Introduction {#sec-introduction}
+
+The `tstests` package provides a number of different statistical tests for
+evaluating the goodness of fit of time series models as well as their out of
+sample predictions.
+
+The table below summarizes the tests currently implemented, together with the reference paper and type of test.
+The tests are broadly categorized as Wald [W], Likelihood Ratio [LR], Hausman [H], Lagrange Multiplier [LM] and
+Portmanteau [P].
+
+<div style="font-size: 15px">
+| Test                                   |     Function      |                        Reference            |       Type|
+|:---------------------------------------|:------------------|:--------------------------------------------|----------:|
+| GMM Orthogonality Test                 |     gmm_test      |                               [@Hansen1982] |        [W]|
+| Nyblom Parameter Constancy Test        |    nyblom_test    |                               [@Nyblom1989] |       [LM]|
+| Sign Bias Test                         |   signbias_test   |                              [@Engleng1993] |        [W]|
+| Berkowitz Forecast Density Test        |  berkowitz_test   |                            [@Berkowitz2001] |       [LR]|
+| Hong-Li Non Parametric Density Test.   |  hongli_test      |                                 [@Hong2005] |        [P]|
+| Directional Accuracy Tests             |     dac_test      |        [@Pesaran1992],<br> [@Anatolyev2005] |        [H]|
+| Mincer-Zarnowitz Test                  |    minzar_test    |                               [@Mincer1969] |        [W]|
+| Expected Shortfall Test                | shortfall_de_test |                                   [@Du2017] |       [LR]|
+| Value at Risk Test                     |    var_cp_test    | [@Christoffersen1998],<br>[@Christoffersen2004] |   [LR]|
+
+: Package Tests
+</div>
+
+One of the key features of the package includes customization of the test output
+using the `as_flextable` method to generate non-console compatible and nicely
+formatted tables. The next section provides an overview of the tests together
+with examples.
+
+# Goodness of Fit Tests
+
+## GMM Orthogonality
+
+The Generalized Method of Moments framework of @Hansen1982 provides for a set
+of orthogonality conditions for testing the specification of a model. These 
+conditions test for how well a model captures a set of lower to higher order
+moments and co-moments by testing the following hypothesis:
+
+$$
+\begin{aligned}
+E&\left[z_t\right]=0,\quad E\left[z_t^2-1\right]=0\\
+E&\left[z_t^3\right]=0,\quad E\left[z_t^3\right]-3=0\\
+E&\left[\left(z^2_t-1\right)\left(z_{t-j}^2-1\right)\right]=0,\quad j=1,\ldots,m\\
+E&\left[\left(z^3_t\right)\left(z_{t-j}^3\right)\right]=0,\quad j=1,\ldots,m\\
+E&\left[\left(z^4_t-3\right)\left(z_{t-j}^4-3\right)\right]=0,\quad j=1,\ldots,m\\
+\end{aligned}
+$$
+
+where $z_t$ are the standardized residuals from an estimated model, and $m$ the number
+of lags used for testing the hypothesis. 
+
+Define the moment (M) generating conditions as:
+
+$$
+g_T\left(\theta\right) = \frac{1}{T}\sum^T_{t=1}M_t\left(\theta\right)
+$$
+
+
+with $\theta$ being the parameter vector. For large T we expect that $g_T\left(\theta\right)$ converges to $E\left[M_t\left(\theta\right)\right]$, and should be equal to zero under a correctly specified model. The GMM estimator of $\theta$ is obtained by minimizing:
+
+$$
+g_T\left(\theta\right)'S^{-1}g_T\left(\theta\right)
+$$
+
+where S is the weighting matrix and defined as
+
+$$
+S = \frac{1}{T}\sum^T_{t=1}M_t\left(\theta\right)M_t\left(\theta\right)'.
+$$
+
+which turns out to be the asymptotic covariance matrix.^[It is also possible to correct
+this estimator for serial correlation as suggested by @Hamilton2020, but we leave this
+for future investigation.]
+
+The test is conducted on individual moment conditions as a t-test with $T-1$ degrees of freedom, on the co-moment conditions as a Wald test^[Asymptotically distributed as $\chi^2$.] with $j$ degrees of freedom, and joint tests on the co-moment conditions and all conditions ($J$^[All joint tests are denoted by the capital letter $J$ in the package.]) as Wald tests with $m$ and $4+3m$ degrees of freedom, respectively.
+
+As an example, we use the SPY log returns to estimate an exponential GARCH (2,1) 
+model with Johnson's SU distribution, and test all these conditions using the `gmm_test`.
+
+```{r gmmtest}
+spec <- garch_modelspec(spyr, model = "egarch", order = c(2,1), constant = TRUE,
+distribution = "jsu")
+mod <- estimate(spec)
+skewness <- dskewness("jsu", skew = coef(mod)["skew"], shape = coef(mod)["shape"])
+kurtosis <- dkurtosis("jsu", skew = coef(mod)["skew"], shape = coef(mod)["shape"]) + 3
+test <- gmm_test(residuals(mod, standardize = TRUE), lags = 2, skewness = skewness, 
+                 kurtosis = kurtosis, conf_level = 0.95)
+print(test)
+```
+
+None of the p-values are below 5%, therefore we fail to reject the null hypothesis.
+Notice that the joint conditions (Q2-Q4 and J) have no Mean or Std.Error as these
+are vector valued. It is also possible to create a nicer looking table, with symbols,
+using [flextable](https://cran.r-project.org/package=flextable), 
+and we also include the test paper reference in the footnote.
+
+```{r}
+as_flextable(test, include.decision = FALSE, footnote.reference = TRUE)
+```
+
+## Non Parametric Density Test
+
+@Hong2005 introduced a nonparametric portmanteau test, building on the work
+of @Ait1996, which tests the joint hypothesis of i.i.d **and** $U(0,1)$
+for the sequence $x_t$. As noted by the authors, testing $x_t$ using a standard
+goodness-of-fit test (such as the Kolmogorov-Smirnov) would only check the $U(0,1)$
+assumption under i.i.d. and not the joint assumption of $U(0,1)$ and i.i.d. Their
+approach is to compare a kernel estimator $\hat g_j\left(x_1,x_2\right)$ for the
+joint density $g_j\left(x_1,x_2\right)$ of the pair  $\left\{ {x_t,x_{t-j}} \right\}$
+(where $j$ is the lag order) with unity, the product of two $U(0,1)$ densities.
+Given a sample size $n$ and lag order $j>0$, their joint density estimator is:
+
+$$
+{{\hat g}_j}\left( {{x_1},{x_2}} \right) \equiv {\left( {n - j} \right)^{ - 1}}\sum\limits_{t = j + 1}^n {{K_h}\left( {{x_1},{{\hat X}_t}} \right){K_h}\left( {{x_2},{{\hat X}_{t - j}}} \right)}
+$$
+where ${{\hat X}_t} = {X_t}\left( {\hat \theta } \right)$, and $\hat \theta$ is a $\sqrt n$ consistent estimator of $\theta_0$. The function $K_h$ is a boundary
+modified kernel defined as:
+
+$$
+K_{h}\left({x,y}\right)\equiv\left\{{\matrix{
+{h^{-1}k\left({{{x-y}\over{h}}}\right)/\int_{-\left({x/h}\right)}^{1}{k\left({u}\right)du},\quad \textbf{if}\quad x\in\left[{0,h}\right)}\cr
+{h^{-1}k\left({{{x-y}\over{h}}}\right),\quad \textbf{if}\quad x\in\left[{h,1-h}\right]}\cr
+{h^{-1}k\left({{{x-y}\over{h}}}\right)/\int_{-1}^{\left({1-x}\right)/h}{k\left({u}\right)du,\quad \textbf{if}\quad x\in\left({1-h,1}\right]}}\cr
+}}\right.
+$$
+
+
+
+where $h\equiv h\left(n \right)$ is a bandwidth such that $h\rightarrow 0$ as $n\rightarrow \infty$, and the kernel $k(.)$ is a pre-specified symmetric probability density, which is implemented as suggested by the authors using a quartic kernel,
+
+$$
+k\left( u \right) = \frac{{15}}{{16}}{\left( {1 - {u^2}} \right)^2}{\bf{1}}\left( {\left| u \right| \le 1} \right),
+$$
+
+where $\bf{1}\left(.\right)$ is the indicator function. Their portmanteau test statistic is defined as:
+
+$$
+\hat W\left(p \right) \equiv {p^{ - 1/2}}\sum\limits_{j = 1}^p {\hat Q\left( j \right)},
+$$
+
+where
+
+$$
+\hat Q\left( j \right) \equiv {{\left[ {\left( {n - j} \right)h\hat M\left( j \right) - A_h^0} \right]} \mathord{\left/
+ {\vphantom {{\left[ {\left( {n - j} \right)h\hat M\left( j \right) - A_h^0} \right]} {V_0^{1/2}}}} \right.} {V_0^{1/2}}},
+$$
+
+and
+
+$$
+\hat M\left( j \right) \equiv \int_0^1 {\int_0^1 {{{\left[ {{{\hat g}_j}\left( {{x_1},{x_2}} \right) - 1} \right]}^2}d{x_1}d{x_2}} }.
+$$
+
+The centering and scaling factors $A_h^0$ and $V_0$ are defined as:
+$$
+\begin{array}{l}
+A_h^0 \equiv {\left[ {\left( {{h^{ - 1}} - 2} \right)\int_{ - 1}^1 {{k^2}\left( u \right)du + 2\int_0^1 {\int_{ - 1}^b {k_b^2\left( u \right)dudb} } } } \right]^2} - 1\\
+{V_0} \equiv 2{\left[ {\int_{ - 1}^1 {{{\left[ {\int_{ - 1}^1 {k\left( {u + v} \right)k\left( v \right)dv} } \right]}^2}du} } \right]^2}
+\end{array}
+$$
+
+where,
+
+$$
+{k_b}\left( . \right) \equiv {{k\left( . \right)} \mathord{\left/{\vphantom {{k\left( . \right)} {\int_{ - 1}^b {k\left( v \right)dv} }}} \right.} {\int_{ - 1}^b {k\left( v \right)dv} }}.
+$$
+
+Under the correct model specification, the authors show that
+$\hat W\left( p \right)\rightarrow N\left(0,1\right)$ in distribution. Because
+negative values of the test statistic only occur under the Null Hypothesis of a
+correctly specified model, the authors indicate that only upper tail critical values
+need be considered. The test is quite robust to model misspecification as parameter
+uncertainty has no impact on the asymptotic distribution of the test statistic as
+long as the parameters are $\sqrt n$ consistent. Finally, in order to explore possible
+causes of misspecification when the statistic rejects a model, the authors develop
+the following test statistic:
+
+$$
+M\left({m,l}\right)\equiv\left[{\sum\limits_{j=1}^{n-1}{w^{2}\left({j/p}\right)\left({n-j}\right){\rm {\hat\rho}}_{ml}^{2}\left({j}\right)-\sum\limits_{j=1}^{n-1}{w^{2}\left({j/p}\right)}}}\right]/{\left[{2\sum\limits_{j=1}^{n-2}{w^{4}\left({j/p}\right)}}\right]}^{1/2}
+$$
+
+where ${{\hat \rho }_{ml}}\left( j \right)$ is the sample cross-correlation
+between $\hat X_t^m$ and $\hat X_{t - \left| j \right|}^l$, and $w\left(.\right)$
+is a weighting function of lag order j, and as suggested by the authors implemented
+as the Bartlett kernel. As in the $\hat W\left( p \right)$ statistic, the asymptotic
+distribution of $M\left( {m,l} \right)$ is $N\left(0,1\right)$ and upper critical
+values should be considered. 
+
+We consider an example below using the SPY dataset and a short sub-sample. Note that
+the critical value are the upper quantiles of a standardized normal distribution
+and we use a confidence level of 95% for this example, hence, based on the way
+the test is conducted, we reject the null of the statistic is higher than this
+value (`qnorm(0.95)`).
+
+Based on the example shown, we fail to reject the null of a correctly specified model
+for this short sub-sample, but caution that using the full sample would have led
+to an outright rejection, raising questions about parameter stability (next section)
+and/or structural breaks in the series.
+
+```{r honglitest}
+spec <- garch_modelspec(spyr[1:1000], model = "egarch", order = c(1,1), constant = TRUE,
+distribution = "jsu")
+mod <- estimate(spec)
+z <- residuals(mod, standardize = TRUE)
+p <- pdist("jsu", z, mu = 0, sigma = 1, skew = coef(mod)["skew"], shape = coef(mod)["shape"])
+as_flextable(hongli_test(as.numeric(p), lags = 4, conf_level = 0.95), include.decision = T, footnote.reference = TRUE)
+```
+
+
+## Parameter Constancy
+
+The parameter constancy tests of @Nyblom1989 and @Hansen1992 are Lagrange multiplier
+parameter stability tests. The test of @Nyblom1989 tests the null hypothesis that all parameters
+are constant against the alternative that they follow a martingale process, whilst 
+that of @Hansen1992 tests the null hypothesis of constancy for individual parameters. 
+The distribution of the statistic is non-standard, and related to the distribution
+of squares of independent Brownian bridges which has the following series expansion^[From 
+equation 3.3 of @Nyblom1989.]:
+
+$$
+\sum^{\infty}_{k=1}\frac{1}{\left(\pi k\right)^2}\chi^2_{k}\left(p\right)
+$$
+
+where $p$ are the number of parameters. @Hansen1992 provides a table with critical
+values for up to 20 parameters based on simulation which has been used extensively as
+a reference point when conducting this test. Instead, the `tstests` package 
+uses an internal dataset generated by simulation for up to 40 parameters in addition
+to a kernel smoothed density in order to generate the p-values directly. It should be
+noted that neither the individual nor joint tests provide any information about
+the location of breaks, and the distribution is only valid for stationary data.
+
+To illustrate the use of the test, we continue with the same model as in the previous 
+section, and turn on the argument to provide guidance on whether to reject the
+null hypothesis at the 5% level of significance.
+
+```{r}
+spec <- garch_modelspec(spyr, model = "egarch", order = c(2,1), constant = TRUE,
+distribution = "jsu")
+mod <- estimate(spec)
+test <- nyblom_test(residuals(mod, standardize = TRUE), scores = estfun(mod), 
+                    parameter_names = names(coef(mod)), 
+                    parameter_symbols = mod$parmatrix[estimate == 1]$symbol)
+as_flextable(test, use.symbols = TRUE, footnote.reference = TRUE, include.decision = TRUE)
+```
+
+The table indicates that individually we can reject the null of parameter
+constancy on most of the parameters at the 5% level as well as jointly (**J**).
+
+## Sign Bias
+The sign bias test of @Engleng1993 evaluates the presence of leverage effects 
+in the standardized residuals (to capture possible misspecification of a GARCH model), 
+by regressing the squared standardized residuals on lagged negative and positive 
+shocks as follows:
+
+$$
+z^2_t = c_0 + S^{-}_{t-1} +  c_2 S^{-}_{t-1}\varepsilon_{t-1} +
+c_3 S^{+}_{t-1}\varepsilon_{t-1} + u_t
+$$
+
+where $S^{-}_{t-1} = I_{\varepsilon_{t-1}<0}$, $S^{+}_{t-1} = I_{\varepsilon_{t-1}\ge0}$.
+and $\varepsilon_t$ the model residuals. The null hypothesis is that all 
+coefficients $\{c_1,c_2,c_3\}$ are individually and jointly zero. The joint test is 
+a Wald test distributed as $\chi^2(3)$.
+
+The table below shows the output of this test on the residuals of the model used
+so far, where the p-values indicate that we cannot reject the null of no sign bias
+either individually or jointly.
+
+```{r}
+test <- signbias_test(residuals(mod), sigma = sigma(mod))
+as_flextable(test, use.symbols = TRUE, footnote.reference = TRUE)
+```
+
+# Forecast Evaluation Tests
+
+## Density Forecast
+
+A novel method to analyze how well a conditional density fits the underlying data
+is through the probability integral transformation (**PIT**) discussed in
+@Rosenblatt1952 and defined as:
+
+$$
+{x_t} = \int\limits_{ - \infty }^{{y_t}} {\hat f\left( u \right)du = \hat F\left( {{y_t}} \right)}
+$$
+
+
+which transforms the data $y_t$, using the estimated distribution $\hat F$ into
+i.i.d. $U(0,1)$ under the correctly specified model. 
+
+Because of the difficulty in testing a $U(0,1)$ sequence, the PIT data ($x_t$) 
+is transformed into $N(0,1)$ by @Berkowitz2001 using the normal 
+quantile ($\Phi^{-1}$)  function:
+
+$$
+z_t = \Phi^{-1}\left(x_t\right)
+$$
+
+Under the null of a correctly forecast density the values ($z_t$) should be independent
+across observations, with mean zero, unit variance and non-significant autoregressive 
+terms (zero). For example, the following first order autoregressive dynamics can 
+be tested:
+
+$$
+z_t = \mu + \rho\left(z_{t-1} - \mu\right) + \varepsilon_t
+$$
+
+as the unrestricted equation in a likelihood ratio (LR) test against the restricted
+equation where $\mu=0$, $\sigma=1$ and $\rho=0$. The LR test is then:
+
+$$
+\mathrm{LR} = -2\left(L\left(0,1,0\right) - L\left(\hat\mu,\hat\sigma,\hat\rho\right)\right)
+$$
+
+where $L$ is the log-likelihood. The LR test statistic is asymptotically distributed 
+as $\chi^2(2+m)$ where $m$ are the number of autoregressive lags.
+
+A final testing step can also be included which looks at the goodness of fit
+of the transformed series into the Normal. Following @Dowd2004, the output
+includes the Normality test of @Jarque1987.
+
+We use the GARCH based pre-computed backtest^[Based on the SPY log returns data 
+using a GARCH(1,1)-JSU model (see documentation for details and replication code).] in the package for the example:
+
+```{r}
+p <- pdist('jsu', q = garch_forecast$actual, mu = garch_forecast$forecast,
+sigma = garch_forecast$sigma, skew = garch_forecast$skew,
+shape = garch_forecast$shape)
+as_flextable(berkowitz_test(p))
+```
+
+Both the p-values of the LR and Jarque-Bera tests are greater than 5% so at this
+level we fail to reject the null hypothesis, and find the density forecast
+adequately meets the requirements of these tests.
+
+
+## Directional Accuracy
+
+High and significant Directional Accuracy could imply either an
+ability to predict the sign of the mean forecast or could merely be the result
+of volatility dependence in the absence of mean predictability as argued by
+@Christoffersen2006. 
+
+@Pesaran1992 provide a non-parametric test to evaluate the magnitude and
+significance of the forecast's directional accuracy. Let $y_t$ denote
+the actual series and $x_t$ the forecast of that series, then the null
+hypothesis is that the two are independent (the forecast cannot predict the
+actual). This is a Hausman type test with statistic:
+
+$$
+S_n = \frac{ P - P_*}{\sqrt{\left[V\left(P\right) - V\left(P_*\right)\right]}}
+$$
+
+where:
+
+$$
+P = \frac{1}{n} \sum^n_{t=1}H\left(y_t x_t\right)
+$$
+
+representing the proportion of times that x correctly predicts y, 
+with $H(.)$ being the Heaviside function taking values of 1 if the 
+signs of the forecast and actual agree and 0 otherwise.
+
+Further, 
+
+$$
+P_* = P_y P_x + \left(1 - P_y\right)\left(1 - P_x\right)
+$$
+
+with $P_y$ and $P_x$ the proportion of positive cases in y and x respectively. 
+The equation represents the expected proportion of times that x would correctly predict
+y, under the assumption that they are independently distributed (the null).
+This difference between realized proportion and expected proportion under the
+null forms the basis of the Hausman test statistic. The denominator standardizes
+this difference in proportions by the difference in the variance of the two 
+proportions, with:
+
+$$
+V\left(P\right) = \frac{1}{n}P_*\left(1 - P_*\right)
+$$
+
+and
+
+$$
+\begin{aligned}
+V\left(P_*\right) =& \frac{1}{n}\left(2 P_y-1\right)^2 P_x\left(1- P_x\right) + \\
+& \frac{1}{n}\left(2 P_x-1\right)^2 P_y\left(1- P_y\right)+\\
+& \frac{4}{n^2} P_y P_x\left(1 - P_y\right)\left(1 - P_x\right)
+\end{aligned}
+$$
+
+The statistic $S_n$ is asymptotically distributed as $N\left(0,1\right)$.
+
+While @Pesaran1992 test for sign predictability, @Anatolyev2005 test
+for mean predictability based on normalized excess profitability
+implied by a directional strategy which goes long or short depending on the
+sign of the forecast. One of the key differences between these two tests relates
+to the observed asymmetric nature of $y_t$, which means that it may matter
+when $x_t$ fails to predict $y_t$ if during those times the loss (or missed gain)
+is high enough to make the strategy relatively unprofitable despite having 
+significant directional accuracy. Consider the 1-period return of the trading strategy:
+
+
+$$
+r_t = \textrm{sign}\left(x_t\right)y_t
+$$
+
+with expected return 
+
+$$
+A_n = \frac{1}{n}\sum^n_{t=1}r_t
+$$
+
+A benchmark strategy which issues buy and sell signals at random with proportions
+of buys and sells the same as in the trading strategy, has the following
+expected return:
+
+$$
+B_n = \left(\frac{1}{n}\sum^n_{t=1}\textrm{sign}\left(x_t\right)\right)\left(\frac{1}{n}\sum^n_{t=1}y_t\right)
+$$
+
+Under the null of conditional mean independence, then $E\left[y_t|I_{t-1}\right] = \mathrm{constant}$.
+If the strategy has predictive power, it will generate higher returns on average than the benchmark, and
+$A_n - B_n$ will be greater than zero and significant. To test the significance of this difference, it
+needs to be normalized by the the variance of this difference ($V$):
+
+
+$$
+V = \frac{4}{n^2} p_y\left(1 - p_y\right)\sum^n_{t=1}\left(y_t- y\right)^2
+$$
+
+where $p_y=\frac{1}{2}\left(1 + \frac{1}{n}\sum^n_{t=1}\mathrm{sign}\left(y_t\right)\right)$.
+
+Similar to the test of @Pesaran1992, this is also a Hausman test with statistic $\frac{A_n - B_n}{\sqrt(V)}$,  asymptotically distribution as $N\left(0,1\right)$.
+
+To illustrate we use an ARMA(1,1) pre-computed backtest forecast available in the package:
+
+```{r}
+as_flextable(dac_test(arma_forecast$actual, arma_forecast$forecast))
+```
+
+
+The p-values for both tests in the table above suggest that we fail to reject the null of no
+predictability, with high confidence.
+
+## Forecast Unbiasedness
+
+To understand the properties of a good forecast, we start by considering what
+an optimal forecast should look like. Consider the Wald representation of $y$,
+at horizon h:
+
+$$
+y_{n+h} = \mu + \epsilon_{n+h} + b_1\epsilon_{n+h-1} + b_2\epsilon_{n+h-2} + \ldots
+$$
+
+The optimal h-step forecast is then
+
+$$
+y_{n+h|n} = \mu + b_h\epsilon_n + b_{h+1}\epsilon_{n-1} + \ldots
+$$
+
+with optimal forecast error
+
+$$
+\epsilon_{n+h|n} = \epsilon_{n+h} + b_1\epsilon_{n+h-1} + b_2\epsilon_{n+h-2} + \ldots + b_{h-1}\epsilon_{n+1}
+$$
+
+and variance of the h-step forecast error increasing in h.
+
+The optimal forecast error is unbiased with $E\left[\epsilon_{n+h|n}\right] = 0$, with the
+h-step forecast errors having at most an MA(h-1) structure and the 1-step ahead
+forecast error $\epsilon_{n+1|n} = \epsilon_{n+h}$ being white noise.
+This implies that :
+
+$$
+\epsilon_{n+h|n} = \alpha + \beta y_{n+h|n} + \varepsilon_{n+h}
+$$
+
+will have $\alpha=0$ and $\beta=0$.
+
+Since 
+
+$$
+\epsilon_{n+h|n} = y_{n+h} - y_{n+h|n}
+$$
+
+then, 
+
+$$
+y_{n+h|n} = \alpha + \beta x_{n+h|n} + \varepsilon_{n+h|n}
+$$
+
+can be tested under the null of unbiasedness with $\alpha=0$ and $\beta=1$ using
+a Wald test. This is the essence of the regression test by @Mincer1969. It 
+effectively tests for forecast bias, though it does not say anything about 
+forecast variance.
+
+The table below shows the output of the test using a 15-step ahead forecast on a chosen
+subsample of SPY log returns from an ARMA(15,0) model. We fail to reject the NULL
+of $\alpha=0$ and $\beta=1$ given the results of the Wald test with Pr(>Chisq) = 0.96.
+
+```{r,warning=FALSE,message=FALSE}
+spyr <- na.omit(diff(log(spy)))
+mod <- arima(as.numeric(spyr[2000:2500]), order = c(15,0,0), transform.pars = TRUE, include.mean = TRUE)
+p <- predict(mod, n.ahead = 15)
+test <- minzar_test(actual = as.numeric(spyr[2501:2515]), 
+                    forecast = as.numeric(p$pred))
+as_flextable(test, footnote.reference = T, digits = 2)
+```
+
+
+## Expected Shortfall
+
+The test of @Du2017 combines ideas from @Berkowitz2001 and @Christoffersen1998 
+to create an unconditional and conditional shortfall test based on the probability 
+integral transformed realizations, conditioned on the forecast distribution, 
+to evaluate the severity and independence of the shortfall residuals.
+
+## The Unconditional Test
+
+The unconditional test assesses the expected value of the cumulative
+violations beyond the Value at Risk (VaR) threshold, using a two-sided
+t-test, with the following statistic:
+
+$$
+U_{ES} = \frac{\sqrt{n}\left(\bar H\left(\alpha\right) - \frac{\alpha}{2}\right)}{\sqrt{\alpha\left(\frac{1}{3} - \frac{\alpha}{4}\right)}}
+$$
+
+
+where the term $\frac{\alpha}{2}$ is the expected value under a correctly calibrated
+risk model. $\bar H\left(\alpha\right)$ denotes the sample mean of $H_t\left(\alpha\right)$:
+
+$$
+\bar H\left(\alpha\right)=\frac{1}{n}\sum^n_{t=1}H_t\left(\alpha\right)
+$$
+
+with $H_t\left(\alpha\right)$ the cumulative failures (violations beyond VaR) such that:
+
+$$
+H_t\left(\alpha\right) = \frac{1}{\alpha}\left(\alpha - u_t\right)\mathrm{I}\left(u_t\le\alpha\right).
+$$
+
+The vector $u$ is the probability integral transformation of the future realization given 
+the forecast distribution.
+
+The distribution of the test statistic $U_{ES}$ is asymptotically distributed as $N(0,1)$. Since the statistic
+is bounded in the unit interval, the confidence intervals need to be constrained to the be between [0,1]. 
+Therefore, the p-value will take the following form:
+
+$$
+Pr(>|t|) = 2 \min{\left(\mathrm{Pr}\left[|U_{ES}|\le x\right],1-\mathrm{Pr}\left[|U_{ES}|\le x\right]\right)}
+$$
+
+## The Conditional Test
+
+The conditional test assesses not only the correctness and significance of the expected value
+of the cumulative failures but also their independence. Consider the auto-covariance of the
+cumulative violations for lag j:
+
+$$
+\gamma_j = \frac{1}{n-j}\sum^n_{t=j+1} \left(H_t - \frac{\alpha}{2}\right)\left(H_{t-j}-\frac{\alpha}{2}\right).
+$$
+
+The autocorrelation is then equal to:
+
+$$
+\rho_j = \frac{\gamma_j}{\gamma_0}
+$$
+and the test statistic for m lags is:
+
+$$
+C_{ES} = n\sum^m_{j=1}\rho^2_j
+$$
+
+which is asymptotically distributed as $\chi^2_m$, and is independent of $\alpha$.
+
+## Example
+
+The following example, using the pre-computed GARCH backtest data, highlights
+the approach to using the `shortfall_de_test` function.
+
+```{r,warning=FALSE,message=FALSE}
+# the pit data
+x <- pdist("jsu", q = garch_forecast$actual, mu = garch_forecast$forecast,
+sigma = garch_forecast$sigma, skew = garch_forecast$skew,
+shape = garch_forecast$shape)
+test <- shortfall_de_test(x, alpha = 0.05, lags = 4)
+as_flextable(test, footnote.reference = T) |> width(j = 1:3,width = 1.2)
+```
+
+
+## Value at Risk: Coverage and Duration
+
+The Value at Risk (VaR) tests in the `tstests` package are based on the
+proportion of failures test of @Kupiec1995, the conditional coverage test 
+of @Christoffersen1998, and the duration between failures test of 
+@Christoffersen2004. These are summarized in the next sections.
+
+## Proportion of Failures (`UC`)
+
+The test of @Kupiec1995 assesses whether the proportion of failures is consistent 
+with the expected proportion of failures at a given level of VaR. This is done
+by summing the number of violation (binary) and dividing by the length of the
+forecasts.^[Under the assumption of i.i.d observations, the sequence of failures
+is distributed as Bernoulli($\alpha$).] Under the null hypothesis that the 
+proportion of failures ($\pi$) is equal to the VaR level ($\alpha$), 
+then the restricted model likelihood is:
+
+$$
+\mathrm{L}_r = \left(1 - \alpha\right)^{n}\alpha^{k}
+$$
+and the unrestricted (observed) model likelihood:
+
+$$
+\mathrm{L}_u = \left(1 - \pi\right)^{n}\pi^{k}
+$$
+where $\pi=\frac{n}{\left(n + k\right)}$, $n$ are the number of observations, and $k$ the number of failures. A likelihood ratio test can then be conducted with statistic:
+
+$$
+\mathrm{LR}_{uc} = -2\log{\frac{\mathrm{L}_r}{\mathrm{L}_u}}
+$$
+
+which is distributed as $\chi^2_1$.
+
+## Independence of Failures (`CCI`)
+
+The proportion of failures (or unconditional) test of @Kupiec1995 tests the
+coverage of the interval but has no power in detecting whether they are 
+independent. @Christoffersen1998 proposed a test to explicitly check the independence
+assumption against a first order Markov alternative. Consider a binary, first order
+Markov chain with transition probability matrix:
+
+$$
+\Pi_1 = 
+\begin{bmatrix}
+1-\pi_{01} & \pi_{01}\\
+1-\pi_{11} & p_{11}
+\end{bmatrix}
+$$
+
+where $\pi_{ij}=Pr\left(I_t=j|I_{t-1}-i\right)$, and $I_t$ is the indicator function
+denoting failures. The approximate likelihood of this process is then
+
+$$
+\mathrm{L}_u = \left(1-\pi_{01}\right)^{n_{00}}\pi_{01}^{n_{01}}\left(1-\pi_{11}\right)^{n_{10}}\pi_{11}^{n_{11}}
+$$
+where $n_{ij}$ is the number of observation with value i followed by j. For example, 
+$n_{10}$ represents the number of periods with failures followed by periods with
+no failures. For the restricted model under the null of independence, the first
+order Markov chain has the following transition probability matrix:
+
+$$
+\Pi_1 = 
+\begin{bmatrix}
+1-\pi_2 & \pi_2\\
+1-\pi_2 & \pi_2\\
+\end{bmatrix}
+$$
+with the following likelihood:
+
+$$
+\mathrm{L}_r = \left(1 - \pi_2\right)^{n_{00} + n_{10}}\pi_2^{n_{01} + n_{11}}
+$$
+
+Finally, the likelihood ratio for the test of independence can be expressed as:
+
+$$
+\mathrm{LR}_{cci} = -2\log\frac{L_r}{L_u}
+$$
+
+which is asymptotically distributed as $\chi^2\left(1\right)$.
+
+## Conditional Coverage (`CC`)
+
+The likelihood ratio for the joint test of coverage and independence is simply the
+sum of the Kupiec coverage and independence likelihood ratios:
+
+$$
+\mathrm{LR}_{cc} = \mathrm{LR}_{uc} + \mathrm{LR}_{cci}
+$$
+which is asymptotically distributed as $\chi^2\left(2\right)$.
+
+
+## Duration between Failures (`D`)
+
+The conditional coverage independence test in the previous section has limited
+power in detecting temporal dependence beyond the simple first order Markov 
+structure. To provide a more powerful test @Christoffersen2004 proposed a more
+general structure using the duration of time between VaR failures 
+(the no-hit duration), defined as :
+
+$$
+D_i = t_i - t_{i-1}
+$$
+
+where $t_i$ denotes the time index of violation number $i$. Under the null hypothesis
+of a correctly specified risk model, this no-hit duration ($D$) should have no memory
+with a mean duration of $\frac{1}{\alpha}$ periods. Since the only continuous memory free
+random distribution is the exponential, then under the null hypothesis the distribution
+of the no-hit duration should be:
+
+$$
+f_{\mathrm{exp}}\left(D;\alpha\right) = p\exp\left(-\alpha D\right).
+$$
+
+In order to test for this, an encompassing distribution which allows for duration dependence
+and also embeds the exponential is required. The Weibull distribution offers one such
+example, with distribution:
+
+$$
+f_{\mathrm{W}}\left(D;a,b\right) = a^bbD^{b-1}\exp\left(-\left(aD\right)^b\right).
+$$
+
+The exponential is a special case when $b=1$. Therefore, the null hypothesis of 
+a memory-less duration process corresponds to $b=1$ and $a=\alpha$, which can be tested 
+using a likelihood ratio test distributed as $\chi^2\left(1\right)$.^[The actual
+implementation requires calculating the duration of the hit sequence, the censored
+observations and combining all this to construct the log-likelihood which needs
+to be solved using numerical methods for the unrestricted likelihood.]
+
+
+## Example
+
+The table below shows the 4 tests for VaR, with p-values well above 10% indicating a
+correctly specified model for this series during the out of sample period 
+tested.
+
+
+```{r,warning=FALSE,message=FALSE}
+q <- qdist("jsu", p = 0.05, mu = garch_forecast$forecast, sigma = garch_forecast$sigma,
+skew = garch_forecast$skew, shape = garch_forecast$shape)
+test <- var_cp_test(actual = garch_forecast$actual, forecast = q, alpha = 0.05)
+as_flextable(test, footnote.reference = T) |> width(j = 1:3,width = 1.2)
+```
+
+
+# References

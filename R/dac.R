@@ -6,11 +6,11 @@
 #' out of sample period.
 #' @param forecast the forecast values of the series in the out of sample period.
 #' @param ... not currently used.
-#' @return An object of class \dQuote{tstest.dac} which has a print and
+#' @returns An object of class \dQuote{tstest.dac} which has a print and
 #' as_flextable method.
 #' @details The null hypothesis for the test of Pesaran and Timmermann (1992) is
 #' that the actual and predicted are independent (no sign predictability), whereas
-#' the test of Anatolyev and Gerko (2005) measures the significane of the excess
+#' the test of Anatolyev and Gerko (2005) measures the significance of the excess
 #' profitability under the null hypothesis of no excess excess profitability. Both
 #' are Hausman type tests asymptotically distributed as standard Normal.
 #' @note The test will not work with constant forecasts.
@@ -47,9 +47,9 @@ dac_test <- function(actual, forecast, ...)
     dac_tab <- data.table("Test" = c(test_1$Test, test_2$Test),
                          "Statistic" = c(test_1$Stat, test_2$Stat), "Pr(>|t|)" = c(test_1$p_value, test_2$p_value))
     dac_tab[,signif := pvalue_format(`Pr(>|t|)`)]
-    decision <- rep(" ", 2)
-    if (dac_tab$`Pr(>|t|)`[1] <= 0.05) decision[1] <- "Reject NULL"
-    if (dac_tab$`Pr(>|t|)`[2] <= 0.05) decision[2] <- "Reject NULL"
+    decision <- rep("Fail to Reject H0 ", 2)
+    if (dac_tab$`Pr(>|t|)`[1] <= 0.05) decision[1] <- "Reject H0"
+    if (dac_tab$`Pr(>|t|)`[2] <= 0.05) decision[2] <- "Reject H0"
     dac_tab[,'Decision(5%)' := decision]
     H0 <- c(test_1$H0, test_2$H0)
     references <- c("Pesaran, M.H. and Timmermann, A. (1992), A simple nonparametric test of predictive performance, Journal of Business and Economic Statistics, 10(4), 461--465.",

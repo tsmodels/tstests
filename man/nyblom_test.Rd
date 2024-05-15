@@ -37,11 +37,15 @@ The parameter constancy test of Nyblom (1989).
 The p-values for the test statistic are based on a pre-computed density,
 by simulation using equation 3.3 of Nyblom (1989), with up to 40 parameters and
 saved as an internal data object within the package. A kernel density is used
-to fit the 100,000 samples of the distribution before extracting the p-values.
+to fit the 10,000 samples of the distribution before extracting the p-values.
+The original simulation generated more than 100,000 data points but these
+were compressed to quantiles at intervals of 0.001 in order to keep the package
+size under 5MB.
 }
 \examples{
 library(tsgarch)
-spy <- tsdatasets::spy
+library(xts)
+data("spy")
 spyr <- na.omit(diff(log(spy)))
 spec <- garch_modelspec(spyr[1:1200], model = "garch", order = c(1,1),
 constant = TRUE, distribution = "norm")

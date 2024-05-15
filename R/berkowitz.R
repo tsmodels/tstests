@@ -6,7 +6,7 @@
 #' @param lags the number of autoregressive lags (positive and greater than 0).
 #' @param ... additional arguments passed to the arima function which estimates
 #' the unrestricted model.
-#' @return An object of class \dQuote{tstest.berkowitz} which has a print and
+#' @returns An object of class \dQuote{tstest.berkowitz} which has a print and
 #' as_flextable method.
 #' @aliases berkowitz_test
 #' @references
@@ -47,7 +47,7 @@ berkowitz_test <- function(x, lags = 1, ...)
     jb_stat <- n * k1/6 + n * (k2 - 3)^2/24
     jb_prob <- 1 - pchisq(jb_stat, df = 2)
     signif <- pvalue_format(c(prob,jb_prob))
-    decision <- rep(" ", 2)
+    decision <- c("Fail to Reject H0", "Fail to Reject Normal Assumption")
     if (prob < 0.05) decision[1] <- "Reject H0"
     if (jb_prob < 0.05) decision[2] <- "Reject Normal Assumption"
     H0 <- paste("Normal(0,1) with no autocorrelation")

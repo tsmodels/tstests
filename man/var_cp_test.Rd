@@ -40,7 +40,7 @@ only continuous distribution which is memory free is the exponential, the
 test can conducted on any distribution which embeds the exponential as a
 restricted case, and a likelihood ratio test then conducted to see whether
 the restriction holds. Following Christoffersen and Pelletier (2004), the
-Weibull distribution is used with parameter ‘b=1’ representing the case of
+Weibull distribution is used with parameter \sQuote{b=1} representing the case of
 the exponential.
 }
 \examples{

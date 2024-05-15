@@ -23,7 +23,6 @@ garch_forecast
 }
 \description{
 A pre-computed backtest of the SPY log returns data
-(\code{\link[tsdatasets:spy]{tsdatasets::spy()}})
 using a GARCH(1,1)-JSU model (see details for replication code).
 }
 \details{
@@ -32,14 +31,14 @@ is as follows:
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{library(xts)
 library(tsgarch)
-spy <- tsdatasets::spy
+data("spy", package = "tstests")
 spyr <- na.omit(diff(log(spy)))
 n <- NROW(spyr)
 spec <- garch_modelspec(spyr, model = "garch", constant = T,
 distribution = "jsu")
 b <- tsbacktest(spec, start = (n - 250), end = n, h = 1, estimate_every = 30,
 rolling = T, trace = T)
-garch_sample <- data.table(date = b$table$forecast_date,
+garch_forecast <- data.table(date = b$table$forecast_date,
 actual = b$table$actual, forecast = b$table$mu, sigma = b$table$sigma,
 skew = b$table$skew, shape = b$table$shape)
 }\if{html}{\out{</div>}}

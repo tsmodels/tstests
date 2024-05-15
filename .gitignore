@@ -39,3 +39,4 @@ vignettes/*.pdf
 .Renviron
 
 README.Rmd
+inst/doc

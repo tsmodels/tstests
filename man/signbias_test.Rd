@@ -26,7 +26,8 @@ The sign bias test of Engle and Ng (1993).
 \examples{
 library(tsgarch)
 library(tsdistributions)
-spy <- tsdatasets::spy
+library(xts)
+data("spy")
 spyr <- na.omit(diff(log(spy)))
 spec <- garch_modelspec(spyr, model = "garch", order = c(1,1),
 constant = TRUE, distribution = "jsu")

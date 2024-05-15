@@ -4,8 +4,20 @@
 \name{tstests-package}
 \alias{tstests}
 \alias{tstests-package}
-\title{tstests: Time Series Model and Forecast Tests}
+\title{tstests: Time Series Goodness of Fit and Forecast Evaluation Tests}
 \description{
-Goodness of Fit and Forecast Evaluation Tests for timeseries models.
+Goodness of Fit and Forecast Evaluation Tests for timeseries models. Includes, among others, the Generalized Method of Moments (GMM) Orthogonality Test of Hansen (1982), the Nyblom (1989) parameter constancy test, the sign-bias test of Engle and Ng (1993), and a range of tests for value at risk and expected shortfall evaluation.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://www.nopredict.com/packages/tstests}
+  \item \url{https://github.com/tsmodels/tstests}
+}
+
+}
+\author{
+\strong{Maintainer}: Alexios Galanos \email{alexios@4dscape.com} [copyright holder]
+
 }
 \keyword{internal}

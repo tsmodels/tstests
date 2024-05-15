@@ -6,12 +6,12 @@
 #' @param skewness the skewness of the estimated model residuals.
 #' @param kurtosis the kurtosis of the estimated model residuals.
 #' @param ... not currently used.
-#' @return An object of class \dQuote{tstest.gmm} which has a print and
+#' @returns An object of class \dQuote{tstest.gmm} which has a print and
 #' as_flextable method.
 #' @details For parametric models estimated with a particular distribution, the
 #' skewness and kurtosis should flow from the distributional model. See for example
-#' \code{\link[tsdistributions:dskewness]{name}} and
-#' \code{\link[tsdistributions:dkurtosis]{name}}.
+#' \code{\link[tsdistributions]{dskewness}} and
+#' \code{\link[tsdistributions]{dkurtosis}}.
 #' @aliases gmm_test
 #'
 #' @references
@@ -22,7 +22,8 @@
 #' library(tsgarch)
 #' library(tsdistributions)
 #' library(data.table)
-#' spy <- tsdatasets::spy
+#' library(xts)
+#' data("spy")
 #' spyr <- na.omit(diff(log(spy)))
 #' spec <- garch_modelspec(spyr, model = "egarch", order = c(2,1), constant = TRUE,
 #' distribution = "jsu")
@@ -151,7 +152,7 @@ gmm_test <- function(x, lags = 1, skewness = 0, kurtosis = 3, ...)
     gmm_table[,signif := pvalue_format(`Pr(>|t|)`)]
     hypothesis <- "E[Moment] = 0"
     distribution <- c("T","Chi-squared")
-    decision <- rep(' ', nrow(gmm_table))
+    decision <- rep('Fail to Reject H0', nrow(gmm_table))
     if (any(gmm_table$`Pr(>|t|)` <= 0.05)) {
         decision[which(gmm_table$`Pr(>|t|)` <= 0.05)] <- "Reject H0"
     }

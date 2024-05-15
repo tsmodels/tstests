@@ -49,3 +49,4 @@ validate_alpha <- function(alpha)
     if (any(alpha < 0) | any(alpha > 1)) stop("\n alpha must be between 0 and 1 (probability).")
     return(alpha)
 }
+

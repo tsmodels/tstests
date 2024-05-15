@@ -9,19 +9,22 @@
 #' @param parameter_symbols an optional character vector of the latex names of the
 #' parameters which can be used when printing using the flextable format.
 #' @param ... not currently used.
-#' @return An object of class \dQuote{tstest.nyblom} which has a print and
+#' @returns An object of class \dQuote{tstest.nyblom} which has a print and
 #' as_flextable method.
 #' @details The p-values for the test statistic are based on a pre-computed density,
 #' by simulation using equation 3.3 of Nyblom (1989), with up to 40 parameters and
 #' saved as an internal data object within the package. A kernel density is used
-#' to fit the 100,000 samples of the distribution before extracting the p-values.
+#' to fit the 10,000 samples of the distribution before extracting the p-values.
+#' The original simulation generated more than 100,000 data points but these
+#' were compressed to quantiles at intervals of 0.001 in order to keep the package
+#' size under 5MB.
 #' @aliases nyblom_test
 #' @references
 #' \insertRef{Nyblom1989}{tstests}
-#' @aliases nyblom_test
 #' @examples
 #' library(tsgarch)
-#' spy <- tsdatasets::spy
+#' library(xts)
+#' data("spy")
 #' spyr <- na.omit(diff(log(spy)))
 #' spec <- garch_modelspec(spyr[1:1200], model = "garch", order = c(1,1),
 #' constant = TRUE, distribution = "norm")
@@ -65,7 +68,7 @@ nyblom_test <- function(x, scores = NULL, parameter_names = colnames(scores), pa
                                    "Statistic" = c(individual_stat, joint_stat),
                                    "Pr(>t)" = c(individual_pvalue, joint_pvalue))
         nyblom_table[,signif := rep("", m + 1)]
-        decision <- rep(' ', nrow(nyblom_table))
+        decision <- rep('Fail to Reject H0', nrow(nyblom_table))
         nyblom_table[,'Decision(5%)' := decision]
     } else {
         cumulative_scores <- as.matrix(apply(scores, 2, FUN = function(x) cumsum(x)))
@@ -81,7 +84,7 @@ nyblom_test <- function(x, scores = NULL, parameter_names = colnames(scores), pa
                                    "Statistic" = c(as.numeric(individual_stat), joint_stat),
                                    "Pr(>t)" = c(individual_pvalue, joint_pvalue))
         nyblom_table[,signif := pvalue_format(`Pr(>t)`)]
-        decision <- rep(' ', nrow(nyblom_table))
+        decision <- rep('Fail to Reject H0', nrow(nyblom_table))
         if (any(nyblom_table$`Pr(>t)` <= 0.05)) {
             decision[which(nyblom_table$`Pr(>t)` <= 0.05)] <- "Reject H0"
         }

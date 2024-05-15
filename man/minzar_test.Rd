@@ -23,7 +23,7 @@ The forecast unbiasedness test of Mincer and Zarnowitz (1969).
 }
 \examples{
 data(arma_forecast)
-test <- minzar_test(arma_forecast$actual, arma_forecast$forecast, vcov. = sandwich::vcovHAC)
+test <- minzar_test(arma_forecast$actual, arma_forecast$forecast)
 test
 
 }

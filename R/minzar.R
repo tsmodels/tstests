@@ -5,7 +5,7 @@
 #' @param forecast a vector representing the forecasted values of the series.
 #' @param ... additional arguments passed to \code{\link[car]{linearHypothesis}},
 #' except the \dQuote{test} argument which is fixed to Chisq.
-#' @return An object of class \dQuote{tstest.minzar} which has a print and
+#' @returns An object of class \dQuote{tstest.minzar} which has a print and
 #' as_flextable method.
 #' @aliases minzar_test
 #' @references
@@ -13,7 +13,7 @@
 #' @aliases minzar_test
 #' @examples
 #' data(arma_forecast)
-#' test <- minzar_test(arma_forecast$actual, arma_forecast$forecast, vcov. = sandwich::vcovHAC)
+#' test <- minzar_test(arma_forecast$actual, arma_forecast$forecast)
 #' test
 #'
 #' @rdname minzar_test
@@ -38,7 +38,7 @@ minzar_test <- function(actual, forecast, ...)
     joint_effect_table <- data.table("parameter" = "J", "Estimate" = NA, "Std. Error" = NA, "t value" = jeffect$Chisq[2], "Pr(>|t|)" = jeffect$`Pr(>Chisq)`[2])
     minzar_table <- rbind(minzar_table, joint_effect_table)
     minzar_table[,signif := pvalue_format(`Pr(>|t|)`)]
-    decision <- rep(' ', nrow(minzar_table))
+    decision <- rep('Fail to Reject H0', nrow(minzar_table))
     if (any(minzar_table$`Pr(>|t|)` <= 0.05)) {
         decision[which(minzar_table$`Pr(>|t|)` <= 0.05)] <- "Reject H0"
     }

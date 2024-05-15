@@ -1,17 +1,25 @@
 Package: tstests
 Type: Package
-Title: Time Series Model and Forecast Tests
-Version: 0.2.0
-Author: Alexios Galanos
-Maintainer: alexios galanos <alexios@4dscape.com>
+Title: Time Series Goodness of Fit and Forecast Evaluation Tests
+Version: 1.0.0
+Authors@R: c(person("Alexios", "Galanos", role = c("aut", "cre","cph"), email = "alexios@4dscape.com"))
+Maintainer: Alexios Galanos <alexios@4dscape.com>
 Depends: R (>= 3.5.0), methods, tsmethods
-Description: Goodness of Fit and Forecast Evaluation Tests for timeseries models.
-Imports: data.table, flextable, Rdpack, car, ks
+Description: Goodness of Fit and Forecast Evaluation Tests for timeseries models. Includes, among others, the Generalized Method of Moments (GMM) Orthogonality Test of Hansen (1982), the Nyblom (1989) parameter constancy test, the sign-bias test of Engle and Ng (1993), and a range of tests for value at risk and expected shortfall evaluation.
+Imports: data.table, flextable, Rdpack, car, ks, xts
 License: GPL-2
 Encoding: UTF-8
 LazyData: true
 RdMacros: Rdpack
 RoxygenNote: 7.3.1
 Roxygen: list(markdown = TRUE)
-Remotes: tsmodels/tsdatasets, tsmodels/tsgarch
-Suggests: sandwich, tsdatasets, tsdistributions, tsgarch
+URL: https://www.nopredict.com/packages/tstests, https://github.com/tsmodels/tstests
+Suggests: 
+    knitr,
+    rmarkdown,
+    sandwich,
+    testthat (>= 3.0.0),
+    tsdistributions,
+    tsgarch
+VignetteBuilder: knitr
+Config/testthat/edition: 3

@@ -27,14 +27,15 @@ The GMM orthogonality test of Hansen (1982).
 \details{
 For parametric models estimated with a particular distribution, the
 skewness and kurtosis should flow from the distributional model. See for example
-\code{\link[tsdistributions:dskewness]{name}} and
-\code{\link[tsdistributions:dkurtosis]{name}}.
+\code{\link[tsdistributions]{dskewness}} and
+\code{\link[tsdistributions]{dkurtosis}}.
 }
 \examples{
 library(tsgarch)
 library(tsdistributions)
 library(data.table)
-spy <- tsdatasets::spy
+library(xts)
+data("spy")
 spyr <- na.omit(diff(log(spy)))
 spec <- garch_modelspec(spyr, model = "egarch", order = c(2,1), constant = TRUE,
 distribution = "jsu")

@@ -7,7 +7,7 @@
 #' of the residuals.
 #' @param ... additional arguments passed to \code{\link[car]{linearHypothesis}},
 #' except the \dQuote{test} which is fixed to use the Chisq test.
-#' @return An object of class \dQuote{tstest.signbias} which has a print and
+#' @returns An object of class \dQuote{tstest.signbias} which has a print and
 #' as_flextable method.
 #' @aliases signbias_test
 #' @references
@@ -17,7 +17,8 @@
 #' @examples
 #' library(tsgarch)
 #' library(tsdistributions)
-#' spy <- tsdatasets::spy
+#' library(xts)
+#' data("spy")
 #' spyr <- na.omit(diff(log(spy)))
 #' spec <- garch_modelspec(spyr, model = "garch", order = c(1,1),
 #' constant = TRUE, distribution = "jsu")
@@ -57,7 +58,7 @@ signbias_test <- function(x, sigma = 1, ...)
     joint_effect_table <- data.table("parameter" = "J", "Estimate" = NA, "Std. Error" = NA, "t value" = jeffect$Chisq[2], "Pr(>|t|)" = jeffect$`Pr(>Chisq)`[2])
     sign_bias_table <- rbind(sign_bias_table, joint_effect_table)
     sign_bias_table[,signif := pvalue_format(`Pr(>|t|)`)]
-    decision <- rep(' ', nrow(sign_bias_table))
+    decision <- rep('Fail to Reject H0', nrow(sign_bias_table))
     if (any(sign_bias_table$`Pr(>|t|)` <= 0.05)) {
         decision[which(sign_bias_table$`Pr(>|t|)` <= 0.05)] <- "Reject H0"
     }
@@ -80,7 +81,7 @@ signbias_test <- function(x, sigma = 1, ...)
 #' @param x an object inheriting class \dQuote{tstest.test}.
 #' @param digits integer, used for number formatting. Optionally, to avoid
 #' scientific notation, set \sQuote{options(scipen=999)}.
-#' @param signif.stars logical. If TRUE, ‘significance stars’ are printed.
+#' @param signif.stars logical. If TRUE, \sQuote{significance stars} are printed.
 #' @param include.decision prints out whether to reject the NULL at the 5% level
 #' of significance.
 #' @param ... not currently used.
@@ -127,7 +128,7 @@ print.tstest.signbias <- function(x, digits = max(3L, getOption("digits") - 3L),
 #' @param x an object of which inherits a \dQuote{tstest} class.
 #' @param digits integer, used for number formatting. Optionally, to avoid
 #' scientific notation, set \sQuote{options(scipen=999)}.
-#' @param signif.stars logical. If TRUE, ‘significance stars’ are printed.
+#' @param signif.stars logical. If TRUE, \sQuote{significance stars} are printed.
 #' @param include.decision prints out whether to reject the NULL at the 5% level
 #' of significance.
 #' @param use.symbols for tests which either have parameters for which the
