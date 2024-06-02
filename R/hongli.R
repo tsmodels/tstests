@@ -64,7 +64,7 @@ hongli_test <- function(x, lags = 4, conf_level = 0.95, ...)
     H0 <- "Correctly Specified"
     decision <- rep("Fail to Reject H0", 7)
     critical_value <- qnorm(conf_level)
-    decision <- sapply(res, function(x) if (x > critical_value) "Reject H0" else "Fail to Reject HO")
+    decision <- sapply(res, function(x) if (x > critical_value) "Reject H0" else "Fail to Reject H0")
     names(res) = c("M(1,1)", "M(2,2)", "M(3,3)", "M(4,4)", "M(1,2)", "M(2,1)", "J")
     hongli_tab <- data.table(Test = c("M(1,1)", "M(2,2)", "M(3,3)", "M(4,4)", "M(1,2)", "M(2,1)", "J"), "Statistic (z)" = res, "Critical Value" = critical_value)
     hongli_tab[,'Decision' := decision]

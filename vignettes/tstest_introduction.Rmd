@@ -230,7 +230,7 @@ values should be considered.
 We consider an example below using the SPY dataset and a short sub-sample. Note that
 the critical value are the upper quantiles of a standardized normal distribution
 and we use a confidence level of 95% for this example, hence, based on the way
-the test is conducted, we reject the null of the statistic is higher than this
+the test is conducted, we reject the null of the statistic if it is higher than this
 value (`qnorm(0.95)`).
 
 Based on the example shown, we fail to reject the null of a correctly specified model
