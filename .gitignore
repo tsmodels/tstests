@@ -40,3 +40,6 @@ vignettes/*.pdf
 
 README.Rmd
 inst/doc
+*.Rproj
+R/.DS_Store
+.DS_Store

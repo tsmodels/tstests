@@ -71,7 +71,12 @@ var_cp_test <- function(actual, forecast, alpha, ...)
     if (p_values[1] < 0.05) decision[1] <- "Reject H0"
     if (p_values[2] < 0.05) decision[2] <- "Reject H0"
     if (p_values[3] < 0.05) decision[3] <- "Reject H0"
-    if (p_values[4] < 0.05) decision[4] <- "Reject H0"
+    if (is.na(p_values[4])) {
+        decision[4] <- "NA"
+        warning("\nunable to calculate duration test CP (D) with only 1 or less violations.")
+    } else {
+        if (p_values[4] < 0.05) decision[4] <- "Reject H0"
+    }
     H0 <- "Unconditional(UC), Independent(CCI), Joint Coverage(CC) and Duration(D)"
     failures <- c(failures = coverage_test$N, expected = floor(alpha*coverage_test$TN))
     var_tab[,'Decision(5%)' := decision]
@@ -193,14 +198,28 @@ as_flextable.tstest.var_cp <- function(x, digits = max(3L, getOption("digits") -
     N11 <- tab[2,2]
     N01 <- tab[1,2]
     N10 <- tab[2,1]
-    # p01: Probability of having a failure at time t | no failure at t-1
-    p01 <- N01/(N00 + N01)
-    # p11: Probability of having a failure at time t | failure at t-1
-    p11 <- N11/(N10 + N11)
-    # pn : unconditional probability of a failure
-    pn <- (N01 + N11)/sum(tab)
-    res <- log(1 - pn) * (N00 + N10) + log(pn) * (N01 + N11)
-    unr <- log(1 - p01) * N00  + log(p01) * (N01) + log(1 - p11) * (N10) + log(p11) * (N11)
+    if ((N00 + N10) > 0 & (N01 + N11) > 0) {
+        # pn : unconditional probability of a failure
+        pn <- (N01 + N11)/sum(tab)
+        res <- log(1 - pn) * (N00 + N10) + log(pn) * (N01 + N11)
+    } else {
+        res <- 0
+    }
+    if (N00 > 0 & N01 > 0) {
+        # p01: Probability of having a failure at time t | no failure at t-1
+        p01 <- N01/(N00 + N01)
+        term1 <- log(1 - p01) * N00  + log(p01) * (N01)
+    } else {
+        term1 <- 0
+    }
+    if (N10 > 0 & N11 > 0) {
+        # p11: Probability of having a failure at time t | failure at t-1
+        p11 <- N11/(N10 + N11)
+        term2 <- log(1 - p11) * (N10) + log(p11) * (N11)
+    } else {
+        term2 <- 0
+    }
+    unr <-  term1 + term2
     cci_lr_stat <- -2 * (res - unr)
     uc_lr_stat <- .lr_unc_coverage(TN, N, alpha)
     if (is.nan(cci_lr_stat)) cci_lr_stat <- 1e10
@@ -227,27 +246,36 @@ as_flextable.tstest.var_cp <- function(x, digits = max(3L, getOption("digits") -
     N <- sum(failures)
     TN <- length(failures)
     D <- diff(which(failures == 1))
-    C <- rep(0, length(D))
-    # left-censored
-    if (failures[1] == 0) {
-        C = c(1, C)
-        # the number of days until we get the first hit
-        D <- c(which(failures == 1)[1], D)
+    n_failures <- length(which(failures == 1))
+    if (n_failures <= 1) {
+        b = NA
+        unr_loglik <- NA
+        res_loglik <- NA
+        lr_stat <- NA
+        p_value <- NA
+    } else {
+        C <- rep(0, length(D))
+        # left-censored
+        if (failures[1] == 0) {
+            C = c(1, C)
+            # the number of days until we get the first hit
+            D <- c(which(failures == 1)[1], D)
+        }
+        # right-censored
+        if (failures[TN] == 0) {
+            C <- c(C, 1)
+            # the number of days after the last one in the hit sequence
+            D <- c(D, TN - tail(which(failures == 1), 1))
+        }
+        N <- length(D)
+        sol <- try(optim(par = 2, fn = .lik_duration_weibull, gr = NULL, D = D, C = C, N = N,
+                         method = "L-BFGS-B", lower = 0.001, upper = 10, control = list(trace = 0)), silent = TRUE)
+        b <- sol$par
+        unr_loglik <- -sol$value
+        res_loglik <- -.lik_duration_weibull(1, D, C, N)
+        lr_stat <- -2 * (res_loglik - unr_loglik)
+        p_value <- 1 - pchisq(lr_stat, 1)
     }
-    # right-censored
-    if (failures[TN] == 0) {
-        C <- c(C, 1)
-        # the number of days after the last one in the hit sequence
-        D <- c(D, TN - tail(which(failures == 1), 1))
-    }
-    N <- length(D)
-    sol <- try(optim(par = 2, fn = .lik_duration_weibull, gr = NULL, D = D, C = C, N = N,
-                     method = "L-BFGS-B", lower = 0.001, upper = 10, control = list(trace = 0)), silent = TRUE)
-    b <- sol$par
-    unr_loglik <- -sol$value
-    res_loglik <- -.lik_duration_weibull(1, D, C, N)
-    lr_stat <- -2 * (res_loglik - unr_loglik)
-    p_value <- 1 - pchisq(lr_stat, 1)
     H0 <- "Duration Between Exceedances have no memory (Weibull b=1 = Exponential)"
     return(list(b = b, unr_loglik = unr_loglik, res_loglik = res_loglik, lr_stat = lr_stat, p_value = p_value, H0 = H0))
 }
@@ -256,7 +284,7 @@ as_flextable.tstest.var_cp <- function(x, digits = max(3L, getOption("digits") -
 .lik_duration_weibull <- function(pars, D, C, N){
     b <- pars[1]
     a <- ( (N - C[1] - C[N])/(sum(D^b)) )^(1/b)
-    lik <- C[1] * log(.pweibull(D[1],a,b,survival = TRUE)) + (1 - C[1]) * .dweibull(D[1], a, b, log = TRUE) +
+    lik <- C[1] * log(.pweibull(D[1],a,b,survival = TRUE)) + (1 - C[1]) * .pweibull(D[1],a,b,survival = TRUE) +
         sum(.dweibull(D[2:(N - 1)], a, b, log = TRUE)) + C[N] * log(.pweibull(D[N], a, b, survival = TRUE))  +
         (1 - C[N]) * .dweibull(D[N], a, b, log = TRUE)
     if (!is.finite(lik) || is.nan(lik)) lik <- 1e10 else lik <- -lik

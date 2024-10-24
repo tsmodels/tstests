@@ -1,7 +1,7 @@
 
 [![R-CMD-check](https://github.com/tsmodels/tstests/workflows/R-CMD-check/badge.svg)](https://github.com/tsmodels/tstests/actions)
-[![Last-changedate](https://img.shields.io/badge/last%20change-2024--05--14-yellowgreen.svg)](/commits/master)
-[![packageversion](https://img.shields.io/badge/Package%20version-1.0.0-orange.svg?style=flat-square)](commits/master)
+[![Last-changedate](https://img.shields.io/badge/last%20change-2024--10--24-yellowgreen.svg)](/commits/master)
+[![packageversion](https://img.shields.io/badge/Package%20version-1.0.1-orange.svg?style=flat-square)](commits/master)
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/tstests)](https://cran.r-project.org/package=tstests)
 
 # tstests
@@ -14,17 +14,17 @@ formats. The table below provides an overview of the implemented tests,
 some of which were ported over from **rugarch**, others re-written and
 some are new.
 
-| Test                                   |     Function      |                        Reference |
-|:---------------------------------------|:-----------------:|---------------------------------:|
-| Berkowitz Forecast Density Test        |  berkowitz_test   |                 Berkowitz (2001) |
-| Non Parametric Density Test            |    hongli_test    |               Hong and Li (2005) |
-| Directional Accuracy Tests             |     dac_test      | Pesaran (1992), Anatolyev (2005) |
-| GMM Orthogonality Test                 |     gmm_test      |                    Hansen (1982) |
-| Mincer-Zarnowitz Test                  |    minzar_test    |                    Mincer (1969) |
-| Sign Bias Test                         |   signbias_test   |                     Engle (1993) |
-| Nyblom-Hansen Parameter Constancy Test |    nyblom_test    |                    Nyblom (1989) |
-| Expected Shortfall Test                | shortfall_de_test |                        Du (2017) |
-| Value at Risk Test                     |    var_cp_test    |       Christoffersen (1998,2004) |
+| Test | Function | Reference |
+|:---|:--:|---:|
+| Berkowitz Forecast Density Test | berkowitz_test | Berkowitz (2001) |
+| Non Parametric Density Test | hongli_test | Hong and Li (2005) |
+| Directional Accuracy Tests | dac_test | Pesaran (1992), Anatolyev (2005) |
+| GMM Orthogonality Test | gmm_test | Hansen (1982) |
+| Mincer-Zarnowitz Test | minzar_test | Mincer (1969) |
+| Sign Bias Test | signbias_test | Engle (1993) |
+| Nyblom-Hansen Parameter Constancy Test | nyblom_test | Nyblom (1989) |
+| Expected Shortfall Test | shortfall_de_test | Du (2017) |
+| Value at Risk Test | var_cp_test | Christoffersen (1998,2004) |
 
 ## Installation
 
