@@ -1,3 +1,7 @@
+# tstests 1.0.2
+
+* Added R (>= 4.1.0) requirement for use of |> pipe.
+
 # tstests 1.0.1
 
 * Added a correction to the conditional value at risk test (CC and CCI) for the zero
